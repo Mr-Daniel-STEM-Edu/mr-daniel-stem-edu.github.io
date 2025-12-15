@@ -1,0 +1,105 @@
+:root {
+  --bg: #0e0f13;
+  --fg: #eaeaf0;
+  --muted: #9aa0b3;
+  --accent: #5eead4;
+  --accent-2: #a78bfa;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Ubuntu', sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.7;
+}
+
+h1, h2, h3 {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  padding: 80px 10%;
+  gap: 60px;
+}
+
+.hero h1 {
+  font-size: 3rem;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin-top: 10px;
+}
+
+.intro span {
+  color: var(--accent);
+}
+
+.section {
+  padding: 70px 10%;
+}
+
+.section h2 {
+  margin-bottom: 20px;
+  color: var(--accent-2);
+}
+
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+}
+
+ul {
+  padding-left: 20px;
+}
+
+.timeline .event {
+  border-left: 2px solid var(--accent);
+  padding-left: 20px;
+  margin-bottom: 30px;
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.project {
+  padding: 20px;
+  border: 1px solid #1f2937;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.project:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+}
+
+.inline-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  list-style: none;
+  padding: 0;
+}
+
+footer {
+  padding: 40px 10%;
+  border-top: 1px solid #1f2937;
+  color: var(--muted);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
