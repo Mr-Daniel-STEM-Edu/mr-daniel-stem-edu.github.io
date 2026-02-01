@@ -15,10 +15,12 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/animejs@3/lib/anime.min.js"></script>
 
   <style>
+    /* =========================================
+       CORE DESIGN SYSTEM
+       ========================================= */
     :root {
       --primary: #4361ee;
       --primary-soft: rgba(67, 97, 238, 0.1);
@@ -49,7 +51,7 @@
     .logo-area { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: inherit; }
     .logo-box {
       width: 42px; height: 42px; background: var(--nu-gradient);
-      border-radius: 12px; color: white; display: grid; place-items: center; font-size: 1.2rem;
+      border-radius: 12px; color: white; display: grid; place-items: center; font-size: 1.2rem; flex-shrink: 0;
     }
     .brand-name { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.5rem; letter-spacing: -0.02em; }
     
@@ -59,11 +61,13 @@
       text-decoration: none; font-weight: 600; font-size: 0.9rem;
       background: white; border: 1px solid var(--border); color: var(--text);
       transition: all 0.3s ease;
+      white-space: nowrap;
     }
     .back-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateX(-2px); }
 
-    /* SIMULATION ROWS */
+    /* LAYOUT */
     .sim-container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; min-height: 80vh; display: flex; align-items: center; }
+    
     .sim-row {
       display: flex; flex-direction: column; gap: 2rem; width: 100%;
       padding-top: 2rem;
@@ -87,7 +91,6 @@
       box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
       display: flex; align-items: center; justify-content: center;
     }
-    /* Grid Pattern Overlay */
     .canvas-box::before {
       content: ''; position: absolute; inset:0; pointer-events: none;
       background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
@@ -150,6 +153,29 @@
     }
 
     footer { text-align: center; padding: 3rem; border-top: 1px solid var(--border); margin-top: 4rem; background: #fff; }
+
+    /* =========================================
+       MOBILE OPTIMIZATIONS
+       ========================================= */
+    @media (max-width: 768px) {
+      .sim-container { padding: 1rem; }
+      .sim-row { margin-bottom: 3rem; gap: 1.5rem; }
+      .sim-info h2 { font-size: 1.75rem; }
+      
+      .header-bar { padding: 0 1rem; }
+      .brand-name { font-size: 1.25rem; }
+      .back-btn { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+      
+      /* Use 4/3 ratio on mobile for more vertical space */
+      .canvas-box { aspect-ratio: 4/3; } 
+      .hud { font-size: 12px; top: 10px; left: 10px; padding: 8px; max-width: 90%; }
+    }
+
+    @media (max-width: 480px) {
+      .header-bar { flex-direction: column; gap: 0.75rem; padding: 0.75rem 1rem; }
+      .logo-area { margin-bottom: 0.25rem; }
+      .back-btn { width: 100%; justify-content: center; }
+    }
   </style>
 </head>
 <body>
@@ -230,10 +256,9 @@
 
 <script>
 /* =========================================
-   PHYSICS ENGINE & RENDERER
+   PHYSICS ENGINE & RENDERER (UNTOUCHED)
    ========================================= */
 
-// Simulation State
 const state = {
     solute: 'NaOH', // 'NaOH' or 'NH4NO3'
     mass: 5.0,      // grams
@@ -348,7 +373,6 @@ function startDissolution() {
             vx: (Math.random()-0.5)*2,
             vy: 0,
             r: 3 + Math.random()*2,
-            color: '#fff',
             dissolved: false
         });
     }
@@ -436,9 +460,6 @@ function draw() {
     const waterY = bottomY - waterHeight;
 
     // A. Determine Water Color based on Temp
-    // 25C = Neutral (#38bdf8 - Light Blue)
-    // >25C = Red tint (#ef4444)
-    // <25C = Deep Blue tint (#1e3a8a)
     let r, g, b;
     const t = state.T_current;
     if(t > 25) {
