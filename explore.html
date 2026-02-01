@@ -45,7 +45,7 @@
     .logo-area { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: inherit; }
     .logo-box {
       width: 42px; height: 42px; background: var(--nu-gradient);
-      border-radius: 12px; color: white; display: grid; place-items: center; font-size: 1.2rem;
+      border-radius: 12px; color: white; display: grid; place-items: center; font-size: 1.2rem; flex-shrink: 0;
     }
     .brand-name { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.5rem; letter-spacing: -0.02em; }
     
@@ -55,6 +55,7 @@
       text-decoration: none; font-weight: 600; font-size: 0.9rem;
       background: white; border: 1px solid var(--border); color: var(--text);
       transition: all 0.3s ease;
+      white-space: nowrap;
     }
     .back-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateX(-2px); }
 
@@ -63,7 +64,7 @@
       text-align: center; padding: 5rem 1.5rem 3rem;
       max-width: 800px; margin: 0 auto;
     }
-    .explore-hero h1 { font-family: 'Outfit', sans-serif; font-size: 3rem; font-weight: 800; margin-bottom: 1rem; color: var(--text); }
+    .explore-hero h1 { font-family: 'Outfit', sans-serif; font-size: 3rem; font-weight: 800; margin-bottom: 1rem; color: var(--text); line-height: 1.1; }
     .explore-hero p { font-size: 1.2rem; color: var(--text-muted); }
 
     /* GRID LAYOUT */
@@ -71,7 +72,8 @@
     
     .sim-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      /* Adjusted minmax to 300px to fit smaller phones better */
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 2rem;
     }
 
@@ -142,6 +144,38 @@
 
     /* FOOTER */
     footer { text-align: center; padding: 3rem; border-top: 1px solid var(--border); margin-top: 4rem; background: #fff; }
+
+    /* =========================================
+       MOBILE OPTIMIZATIONS
+       ========================================= */
+    @media (max-width: 768px) {
+      /* Hero Scaling */
+      .explore-hero { padding: 4rem 1rem 2rem; }
+      .explore-hero h1 { font-size: 2.25rem; }
+      .explore-hero p { font-size: 1.1rem; }
+      
+      /* Container Spacing */
+      .container { padding: 1.5rem 1rem 4rem; }
+      .sim-grid { gap: 1.5rem; }
+      
+      /* Card Adjustments */
+      .sim-card { padding: 1.5rem; }
+      
+      /* Header Layout */
+      .header-bar { padding: 0 1rem; }
+      .brand-name { font-size: 1.25rem; }
+      .back-btn { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+    }
+
+    @media (max-width: 480px) {
+      /* Stack Header on small phones */
+      .header-bar { flex-direction: column; gap: 0.75rem; padding: 0.75rem 1rem; }
+      .logo-area { margin-bottom: 0.25rem; }
+      .back-btn { width: 100%; justify-content: center; }
+      
+      /* Grid - Ensure single column on narrow screens */
+      .sim-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -167,15 +201,15 @@
     <div class="container">
       <div class="sim-grid">
         <div class="sim-card animate-card">
-  <div class="card-icon"><i class="fas fa-flask"></i></div>
-  <h3>Heat of Dissolution</h3>
-  <p>Analyze exothermic and endothermic processes. Visualize how solute mass affects temperature change in a calorimeter.</p>
-  <div class="card-actions">
-    <a href="dissolution.html" class="launch-btn">Launch Sim <i class="fas fa-arrow-right"></i></a>
-  </div>
-</div>
+          <div class="card-icon"><i class="fas fa-flask"></i></div>
+          <h3>Heat of Dissolution</h3>
+          <p>Analyze exothermic and endothermic processes. Visualize how solute mass affects temperature change in a calorimeter.</p>
+          <div class="card-actions">
+            <a href="dissolution.html" class="launch-btn">Launch Sim <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
 
-      </div>
+        </div>
     </div>
   </main>
 
