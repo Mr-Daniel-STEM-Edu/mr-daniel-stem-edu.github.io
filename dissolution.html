@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="The Nouveau Way - Heat of Dissolution Simulation. Explore exothermic and endothermic reactions.">
+  <meta name="author" content="Mr. Daniel Bishoy">
+  <title>Heat of Dissolution - The Nouveau Way</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3/lib/anime.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-soft: rgba(67, 97, 238, 0.1);
+      --nu-gradient: linear-gradient(135deg, #4361ee, #4cc9f0);
+      --bg: #f8fafc;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --glass: rgba(255, 255, 255, 0.9);
+      --danger: #ef4444;
+      --info: #3b82f6;
+    }
+    
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height: 1.6; }
+
+    /* HEADER */
+    .nouveau-header {
+      position: sticky; top: 0; z-index: 1000;
+      background: var(--glass); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 0;
+    }
+    .header-bar {
+      max-width: 1200px; margin: 0 auto; padding: 0 1.5rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo-area { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: inherit; }
+    .logo-box {
+      width: 42px; height: 42px; background: var(--nu-gradient);
+      border-radius: 12px; color: white; display: grid; place-items: center; font-size: 1.2rem;
+    }
+    .brand-name { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.5rem; letter-spacing: -0.02em; }
+    
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.6rem 1.2rem; border-radius: 12px;
+      text-decoration: none; font-weight: 600; font-size: 0.9rem;
+      background: white; border: 1px solid var(--border); color: var(--text);
+      transition: all 0.3s ease;
+    }
+    .back-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateX(-2px); }
+
+    /* SIMULATION ROWS */
+    .sim-container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; min-height: 80vh; display: flex; align-items: center; }
+    .sim-row {
+      display: flex; flex-direction: column; gap: 2rem; width: 100%;
+      padding-top: 2rem;
+    }
+    
+    @media(min-width: 992px) {
+      .sim-row { flex-direction: row; align-items: flex-start; gap: 4rem; }
+    }
+
+    .sim-info { flex: 1; }
+    .sim-info h2 { font-family: 'Outfit', sans-serif; margin: 0.5rem 0 1rem; font-size: 2.25rem; font-weight: 800; }
+    .sim-tag { 
+      display: inline-block; background: var(--primary-soft); color: var(--primary); 
+      padding: 0.4rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;
+    }
+    
+    /* CANVAS BOX */
+    .canvas-box {
+      flex: 1.5; background: #0f172a; border-radius: 24px; 
+      aspect-ratio: 16/9; position: relative; overflow: hidden;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+      display: flex; align-items: center; justify-content: center;
+    }
+    /* Grid Pattern Overlay */
+    .canvas-box::before {
+      content: ''; position: absolute; inset:0; pointer-events: none;
+      background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    canvas { display: block; width: 100%; height: 100%; position: relative; z-index: 1; }
+
+    /* HUD */
+    .hud {
+      position: absolute; top: 20px; left: 20px; pointer-events: none;
+      font-family: 'Courier New', monospace; font-weight: bold; font-size: 14px;
+      color: rgba(255,255,255,0.9); text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+      white-space: pre-line; z-index: 10;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* CONTROLS */
+    .controls {
+      margin-top: 1.5rem; background: #fff; padding: 1.5rem;
+      border: 1px solid var(--border); border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+    }
+    .ctrl-group { margin-bottom: 1.25rem; }
+    
+    .ctrl-header { 
+      display: flex; justify-content: space-between; align-items: center;
+      font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--text); 
+    }
+    .ctrl-val { 
+      font-family: 'Courier New', monospace; color: var(--primary); 
+      font-weight: 700; background: var(--primary-soft); 
+      padding: 2px 8px; border-radius: 6px;
+    }
+    
+    input[type=range] { width: 100%; accent-color: var(--primary); cursor: pointer; height: 6px; border-radius: 3px; }
+    
+    button.btn-primary {
+      width: 100%; padding: 12px; background: var(--primary); color: white;
+      border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.95rem;
+      transition: all 0.2s;
+      margin-bottom: 0.5rem;
+    }
+    button.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    button.btn-secondary {
+        width: 100%; padding: 10px; background: white; color: var(--text-muted);
+        border: 1px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer;
+    }
+    button.btn-secondary:hover { background: var(--bg); color: var(--text); }
+
+    /* Custom Radio Buttons for Solute */
+    .radio-group { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .radio-opt {
+        flex: 1; padding: 0.5rem; text-align: center; border: 1px solid var(--border);
+        border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;
+        transition: all 0.2s;
+    }
+    .radio-opt.active {
+        background: var(--primary-soft); color: var(--primary); border-color: var(--primary);
+    }
+
+    footer { text-align: center; padding: 3rem; border-top: 1px solid var(--border); margin-top: 4rem; background: #fff; }
+  </style>
+</head>
+<body>
+
+  <header class="nouveau-header">
+    <div class="header-bar">
+      <a href="#" class="logo-area">
+        <div class="logo-box"><i class="fas fa-atom"></i></div>
+        <span class="brand-name">The Nouveau Way</span>
+      </a>
+      <a href="explore.html" class="back-btn">
+        <i class="fas fa-arrow-left"></i> Back to Library
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <div class="sim-container">
+
+      <section class="sim-row animate-in">
+        <div class="sim-info">
+          <span class="sim-tag">Calorimetry</span>
+          <h2>Heat of Dissolution</h2>
+          <p>
+            Observe the thermal changes when a solute dissolves in water. 
+            The temperature change $\Delta T$ is directly proportional to the mass of solute $m$, determined by the substance's enthalpy of solution.
+          </p>
+          
+          <div id="ctrl-panel" class="controls">
+            <div class="ctrl-group">
+                <div class="ctrl-header"><span>Select Solute</span></div>
+                <div class="radio-group">
+                    <div class="radio-opt active" onclick="setSolute('NaOH')" id="opt-NaOH">NaOH<br><small>(Exothermic)</small></div>
+                    <div class="radio-opt" onclick="setSolute('NH4NO3')" id="opt-NH4NO3">NH₄NO₃<br><small>(Endothermic)</small></div>
+                </div>
+            </div>
+
+            <div class="ctrl-group">
+                <div class="ctrl-header">
+                    <span>Solute Mass (g)</span>
+                    <span id="val-mass" class="ctrl-val">5.0</span>
+                </div>
+                <input type="range" id="input-mass" min="1" max="20" step="0.5" value="5">
+            </div>
+
+            <div class="ctrl-group">
+                <div class="ctrl-header">
+                    <span>Water Volume (mL)</span>
+                    <span id="val-vol" class="ctrl-val">100</span>
+                </div>
+                <input type="range" id="input-vol" min="50" max="250" step="10" value="100">
+            </div>
+
+            <button class="btn-primary" onclick="startDissolution()">
+                <i class="fas fa-flask"></i> Dissolve Solute
+            </button>
+            <button class="btn-secondary" onclick="resetSim()">
+                <i class="fas fa-rotate-right"></i> Reset
+            </button>
+          </div>
+        </div>
+
+        <div class="canvas-box">
+          <div id="hud-display" class="hud"></div>
+          <canvas id="sim-canvas"></canvas>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="logo-box" style="margin: 0 auto 1rem; color:white;"><i class="fas fa-atom"></i></div>
+    <h3>The Nouveau Way</h3>
+    <p>Advanced Physics Simulation Platform</p>
+    <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted);">&copy; 2026 Mr Daniel Bishoy. Engineered for Excellence.</p>
+  </footer>
+
+<script>
+/* =========================================
+   PHYSICS ENGINE & RENDERER
+   ========================================= */
+
+// Simulation State
+const state = {
+    solute: 'NaOH', // 'NaOH' or 'NH4NO3'
+    mass: 5.0,      // grams
+    volume: 100,    // mL
+    T_initial: 25.0, // Celsius
+    T_current: 25.0, // Celsius
+    T_target: 25.0,  // Celsius
+    phase: 'idle',   // 'idle', 'dropping', 'dissolving', 'complete'
+    particles: [],
+    bubbles: [],
+    animTime: 0
+};
+
+// Physical Constants (Approximate for simulation)
+// NaOH: Molar Mass ~40g/mol, Enthalpy ~ -44.5 kJ/mol (Exothermic)
+// NH4NO3: Molar Mass ~80g/mol, Enthalpy ~ +25.7 kJ/mol (Endothermic)
+// C_water ~ 4.18 J/g*C
+const SUBSTANCES = {
+    'NaOH': { name: 'Sodium Hydroxide', color: '#ef4444', k: 260 }, // k is a visual constant for Temp change magnitude
+    'NH4NO3': { name: 'Ammonium Nitrate', color: '#3b82f6', k: -80 }
+};
+
+// DOM Elements
+const canvas = document.getElementById('sim-canvas');
+const ctx = canvas.getContext('2d');
+const hud = document.getElementById('hud-display');
+const inputMass = document.getElementById('input-mass');
+const inputVol = document.getElementById('input-vol');
+const valMass = document.getElementById('val-mass');
+const valVol = document.getElementById('val-vol');
+
+// Initialization
+function init() {
+    resize();
+    window.addEventListener('resize', resize);
+    
+    // Inputs Listeners
+    inputMass.addEventListener('input', (e) => {
+        state.mass = parseFloat(e.target.value);
+        valMass.innerText = state.mass.toFixed(1);
+        if(state.phase === 'complete') calculateTarget(); // Real-time update if already done
+    });
+    
+    inputVol.addEventListener('input', (e) => {
+        state.volume = parseFloat(e.target.value);
+        valVol.innerText = state.volume;
+        if(state.phase === 'complete') calculateTarget();
+    });
+
+    resetSim();
+    loop();
+    
+    // Render LaTeX in descriptions
+    renderMathInElement(document.body, {
+      delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]
+    });
+    
+    // Intro Animation
+    anime({
+        targets: '.animate-in', opacity: [0, 1], translateY: [20, 0],
+        duration: 800, easing: 'easeOutQuad'
+    });
+}
+
+function resize() {
+    const parent = canvas.parentElement;
+    canvas.width = parent.clientWidth;
+    canvas.height = parent.clientHeight;
+}
+
+// Logic Control
+function setSolute(type) {
+    state.solute = type;
+    document.querySelectorAll('.radio-opt').forEach(el => el.classList.remove('active'));
+    document.getElementById('opt-'+type).classList.add('active');
+    resetSim();
+}
+
+function resetSim() {
+    state.phase = 'idle';
+    state.T_current = state.T_initial;
+    state.T_target = state.T_initial;
+    state.particles = [];
+    state.bubbles = [];
+    updateHUD();
+}
+
+function calculateTarget() {
+    const s = SUBSTANCES[state.solute];
+    // Simple calorimeter model: dT = (k * mass) / volume
+    // k encapsulates enthalpy and specific heat specific to this visual sim
+    const dT = (s.k * state.mass) / state.volume;
+    state.T_target = state.T_initial + dT;
+}
+
+function startDissolution() {
+    if(state.phase !== 'idle' && state.phase !== 'complete') return;
+    
+    state.phase = 'dropping';
+    calculateTarget();
+    
+    // Spawn particles based on mass
+    const count = Math.floor(state.mass * 5); 
+    const cx = canvas.width / 2;
+    const cy = canvas.height * 0.2; // Start above beaker
+    
+    state.particles = [];
+    for(let i=0; i<count; i++) {
+        state.particles.push({
+            x: cx + (Math.random()-0.5)*40,
+            y: cy + (Math.random()-0.5)*20,
+            vx: (Math.random()-0.5)*2,
+            vy: 0,
+            r: 3 + Math.random()*2,
+            color: '#fff',
+            dissolved: false
+        });
+    }
+}
+
+// Update Loop
+function update(dt) {
+    state.animTime += dt;
+    const waterY = canvas.height * 0.4 + (250 - state.volume) * 0.2; // Water level changes slightly with vol
+    const beakerBottom = canvas.height * 0.85;
+
+    // 1. Particle Physics
+    if (state.phase === 'dropping') {
+        let allDissolved = true;
+        
+        state.particles.forEach(p => {
+            if(!p.dissolved) {
+                // Gravity
+                p.vy += 200 * dt; 
+                p.y += p.vy * dt;
+                p.x += p.vx * dt;
+
+                // Hit Water Surface
+                if (p.y > waterY && p.vy > 0) {
+                    p.vy *= 0.1; // Slow down drastically in water
+                    state.phase = 'dissolving'; // Switch phase
+                }
+                
+                // Dissolve logic
+                if (p.y > waterY + 20) {
+                    p.r -= 2 * dt; // Shrink
+                    if(p.r <= 0) {
+                        p.dissolved = true;
+                        // Spawn thermal bubble effect
+                        state.bubbles.push({
+                            x: p.x, y: p.y, r: 1, life: 1.0,
+                            type: SUBSTANCES[state.solute].k > 0 ? 'hot' : 'cold'
+                        });
+                    } else {
+                        allDissolved = false;
+                        // Jitter in water
+                        p.x += (Math.random()-0.5)*2;
+                        p.y += 10 * dt; // Sink slowly
+                    }
+                }
+            }
+        });
+        
+        if(allDissolved && state.particles.length > 0) {
+            state.phase = 'complete';
+        }
+    }
+
+    // 2. Temperature Interpolation
+    if(state.phase === 'dissolving' || state.phase === 'complete') {
+        const diff = state.T_target - state.T_current;
+        state.T_current += diff * 2.0 * dt; // Smooth approach
+    } else {
+        state.T_current = state.T_initial; // Reset if idle
+    }
+
+    // 3. Bubbles / Thermal Visuals
+    for(let i = state.bubbles.length-1; i>=0; i--) {
+        let b = state.bubbles[i];
+        b.life -= dt;
+        b.r += 20 * dt;
+        b.y -= 10 * dt;
+        if(b.life <= 0) state.bubbles.splice(i, 1);
+    }
+}
+
+// Render Loop
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const cx = canvas.width / 2;
+    const bottomY = canvas.height * 0.85;
+    const width = 180;
+    const height = 250;
+    const topY = bottomY - height;
+    
+    // Calculate Water Level based on Volume (Visual)
+    // Map 50-250mL to pixel height
+    const waterHeight = (state.volume / 250) * (height - 20);
+    const waterY = bottomY - waterHeight;
+
+    // A. Determine Water Color based on Temp
+    // 25C = Neutral (#38bdf8 - Light Blue)
+    // >25C = Red tint (#ef4444)
+    // <25C = Deep Blue tint (#1e3a8a)
+    let r, g, b;
+    const t = state.T_current;
+    if(t > 25) {
+        // Heating up (interpolate Blue -> Red)
+        const factor = Math.min((t - 25) / 20, 1); // Max red at +20 deg change
+        r = 56 + (239 - 56) * factor;
+        g = 189 + (68 - 189) * factor;
+        b = 248 + (68 - 248) * factor;
+    } else {
+        // Cooling down (interpolate Blue -> Darker Blue)
+        const factor = Math.min((25 - t) / 10, 1);
+        r = 56 - (40) * factor;
+        g = 189 - (100) * factor;
+        b = 248 - (50) * factor;
+    }
+    const waterColor = `rgba(${Math.floor(r)},${Math.floor(g)},${Math.floor(b)}, 0.6)`;
+
+    // B. Draw Water
+    ctx.fillStyle = waterColor;
+    ctx.beginPath();
+    ctx.roundRect(cx - width/2 + 5, waterY, width - 10, waterHeight - 5, [0, 0, 15, 15]);
+    ctx.fill();
+
+    // C. Bubbles (Thermal Energy Visuals)
+    state.bubbles.forEach(bub => {
+        ctx.strokeStyle = bub.type === 'hot' ? `rgba(255, 100, 100, ${bub.life})` : `rgba(100, 150, 255, ${bub.life})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(bub.x, bub.y, bub.r, 0, Math.PI*2);
+        ctx.stroke();
+    });
+
+    // D. Particles (Solute)
+    state.particles.forEach(p => {
+        if(!p.dissolved) {
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+            ctx.fill();
+        }
+    });
+
+    // E. Draw Beaker Container (Glass)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(cx - width/2, topY); // Top Left
+    ctx.lineTo(cx - width/2, bottomY - 20); // Bottom Left corner start
+    ctx.quadraticCurveTo(cx - width/2, bottomY, cx - width/2 + 20, bottomY); // Curve
+    ctx.lineTo(cx + width/2 - 20, bottomY); // Bottom
+    ctx.quadraticCurveTo(cx + width/2, bottomY, cx + width/2, bottomY - 20); // Curve
+    ctx.lineTo(cx + width/2, topY); // Top Right
+    ctx.stroke();
+
+    // F. Beaker Lip
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(cx, topY, width/2, 10, 0, 0, Math.PI*2);
+    ctx.stroke();
+
+    // G. Thermometer (Visual Gauge)
+    drawThermometer(cx + width/2 + 40, bottomY, 200, state.T_current);
+
+    updateHUD();
+}
+
+function drawThermometer(x, yBase, h, temp) {
+    // Stem
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    ctx.strokeStyle = '#64748b';
+    ctx.lineWidth = 2;
+    ctx.fillRect(x - 5, yBase - h, 10, h);
+    ctx.strokeRect(x - 5, yBase - h, 10, h);
+    
+    // Bulb
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath();
+    ctx.arc(x, yBase, 12, 0, Math.PI*2);
+    ctx.fill();
+
+    // Mercury Level (Map 0C to 60C)
+    const minT = 0, maxT = 60;
+    const pct = Math.max(0, Math.min((temp - minT) / (maxT - minT), 1));
+    const levelH = pct * (h - 20);
+    
+    ctx.fillRect(x - 3, yBase - 10 - levelH, 6, levelH + 10);
+    
+    // Text Label
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 14px "Courier New"';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${temp.toFixed(1)}°C`, x, yBase - h - 10);
+}
+
+function updateHUD() {
+    const delta = state.T_current - state.T_initial;
+    const sign = delta > 0 ? '+' : '';
+    const color = delta > 0 ? '#ef4444' : (delta < 0 ? '#3b82f6' : '#fff');
+    
+    // Use HTML entities to avoid KaTeX flicker in loop
+    hud.innerHTML = `
+    <span style="color:#94a3b8">Solute:</span> ${state.solute}
+    <span style="color:#94a3b8">Mass:</span> ${state.mass.toFixed(1)} g
+    <span style="color:#94a3b8">Volume:</span> ${state.volume} mL
+    ----------------
+    <span style="color:#94a3b8">T(initial):</span> ${state.T_initial.toFixed(1)} °C
+    <span style="color:#94a3b8">T(final):</span>   ${state.T_current.toFixed(1)} °C
+    <span style="color:${color}">ΔT:         ${sign}${delta.toFixed(1)} °C</span>
+    `;
+}
+
+// Animation Loop
+let lastTime = 0;
+function loop(now) {
+    const dt = Math.min((now - lastTime)/1000, 0.05); // Cap dt
+    lastTime = now;
+    
+    if(dt) {
+        update(dt);
+        draw();
+    }
+    requestAnimationFrame(loop);
+}
+
+// Start
+document.addEventListener("DOMContentLoaded", init);
+
+</script>
+</body>
+</html>
