@@ -49,7 +49,7 @@
     .logo-area { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: inherit; }
     .logo-box {
       width: 42px; height: 42px; background: var(--nu-gradient);
-      border-radius: 12px; color: white; display: grid; place-items: center; font-size: 1.2rem;
+      border-radius: 12px; color: white; display: grid; place-items: center; font-size: 1.2rem; flex-shrink: 0;
     }
     .brand-name { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.5rem; letter-spacing: -0.02em; }
     
@@ -59,6 +59,7 @@
       text-decoration: none; font-weight: 600; font-size: 0.9rem;
       background: white; border: 1px solid var(--border); color: var(--text);
       transition: all 0.3s ease;
+      white-space: nowrap;
     }
     .back-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateX(-2px); }
 
@@ -112,7 +113,6 @@
       box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
       display: flex; align-items: center; justify-content: center;
     }
-    /* Grid Pattern Overlay */
     .canvas-box::before {
       content: ''; position: absolute; inset:0; pointer-events: none;
       background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
@@ -136,7 +136,6 @@
     }
     .ctrl-group { margin-bottom: 1rem; }
     
-    /* FIXED: Better spacing for values */
     .ctrl-header { 
       display: flex; justify-content: space-between; align-items: center;
       font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--text); 
@@ -157,6 +156,41 @@
     button.btn-primary:hover { opacity: 0.9; }
 
     footer { text-align: center; padding: 3rem; border-top: 1px solid var(--border); margin-top: 4rem; background: #fff; }
+
+    /* =========================================
+       MOBILE OPTIMIZATIONS (FIXED)
+       ========================================= */
+    @media (max-width: 768px) {
+      /* Typography Scaling */
+      .hero h1 { font-size: 2.5rem; }
+      .hero p { font-size: 1.1rem; }
+      .sim-info h2 { font-size: 1.75rem; }
+      
+      /* Spacing Reduction */
+      .hero { padding: 4rem 1rem 3rem; }
+      .sim-container { padding: 1rem; }
+      .sim-row { margin-bottom: 4rem; padding-top: 3rem; gap: 1.5rem; }
+      
+      /* Header Layout */
+      .header-bar { padding: 0 1rem; }
+      .brand-name { font-size: 1.25rem; }
+      .back-btn { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+      
+      /* Canvas Usability */
+      /* Use 4/3 ratio on mobile for more vertical play area */
+      .canvas-box { aspect-ratio: 4/3; } 
+      .hud { font-size: 11px; top: 10px; left: 10px; max-width: 90%; }
+    }
+
+    @media (max-width: 480px) {
+      /* Stack Header on very small screens */
+      .header-bar { flex-direction: column; gap: 0.75rem; padding: 0.75rem 1rem; }
+      .logo-area { margin-bottom: 0.25rem; }
+      .back-btn { width: 100%; justify-content: center; }
+      
+      /* Hero Adjustments */
+      .hero h1 { font-size: 2rem; }
+    }
   </style>
 </head>
 <body>
