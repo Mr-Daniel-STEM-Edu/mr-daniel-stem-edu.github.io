@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Reaction Energy Profiler - Visualize Exothermic and Endothermic reactions based on bond energy.">
+  <meta name="author" content="Mr. Daniel Bishoy">
+  <title>Reaction Energy Profiler | The Nouveau Way</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3/lib/anime.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-soft: rgba(67, 97, 238, 0.1);
+      --nu-gradient: linear-gradient(135deg, #4361ee, #4cc9f0);
+      --bg: #f8fafc;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --glass: rgba(255, 255, 255, 0.9);
+      
+      /* Sim Specific Colors */
+      --exo: #ef4444;
+      --endo: #3b82f6;
+    }
+    
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height: 1.6; }
+
+    /* HEADER */
+    .nouveau-header {
+      position: sticky; top: 0; z-index: 1000;
+      background: var(--glass); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 0;
+    }
+    .header-bar {
+      max-width: 1200px; margin: 0 auto; padding: 0 1.5rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo-area { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: inherit; }
+    .logo-box {
+      width: 42px; height: 42px; background: var(--nu-gradient);
+      border-radius: 12px; color: white; display: grid; place-items: center; font-size: 1.2rem; flex-shrink: 0;
+    }
+    .brand-name { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.5rem; letter-spacing: -0.02em; }
+    
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.6rem 1.2rem; border-radius: 12px;
+      text-decoration: none; font-weight: 600; font-size: 0.9rem;
+      background: white; border: 1px solid var(--border); color: var(--text);
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    .back-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateX(-2px); }
+
+    /* SIMULATION ROWS */
+    .sim-container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; margin-top: 2rem; }
+    .sim-row {
+      display: flex; flex-direction: column; gap: 2rem; margin-bottom: 6rem;
+      padding-top: 2rem;
+    }
+    
+    @media(min-width: 992px) {
+      .sim-row { flex-direction: row; align-items: flex-start; gap: 4rem; }
+    }
+
+    .sim-info { flex: 1; }
+    .sim-info h2 { font-family: 'Outfit', sans-serif; margin: 0.5rem 0 1rem; font-size: 2.25rem; font-weight: 800; }
+    .sim-tag { 
+      display: inline-block; background: var(--primary-soft); color: var(--primary); 
+      padding: 0.4rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;
+    }
+    
+    /* CANVAS BOX */
+    .canvas-box {
+      flex: 1.5; background: #0f172a; border-radius: 24px; 
+      aspect-ratio: 16/9; position: relative; overflow: hidden;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+      display: flex; align-items: center; justify-content: center;
+    }
+    canvas { display: block; width: 100%; height: 100%; position: relative; z-index: 1; }
+
+    /* HUD */
+    .hud {
+      position: absolute; top: 15px; left: 15px; pointer-events: none;
+      font-family: 'Courier New', monospace; font-weight: bold; font-size: 14px;
+      color: rgba(255,255,255,0.95); text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+      white-space: pre-line; z-index: 10;
+      background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px;
+      border-left: 3px solid var(--primary); backdrop-filter: blur(4px);
+    }
+
+    /* CONTROLS */
+    .controls {
+      margin-top: 1.5rem; background: #fff; padding: 1.5rem;
+      border: 1px solid var(--border); border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+    }
+    .ctrl-group { margin-bottom: 1.5rem; }
+    
+    .ctrl-header { 
+      display: flex; justify-content: space-between; align-items: center;
+      font-weight: 600; font-size: 0.9rem; margin-bottom: 0.75rem; color: var(--text); 
+    }
+    .ctrl-val { 
+      font-family: 'Courier New', monospace; color: var(--primary); 
+      font-weight: 700; background: var(--primary-soft); 
+      padding: 2px 8px; border-radius: 6px;
+    }
+    
+    input[type=range] { width: 100%; accent-color: var(--primary); cursor: pointer; height: 6px; border-radius: 3px; }
+    
+    button.btn-primary {
+      width: 100%; padding: 14px; background: var(--nu-gradient); color: white;
+      border: none; border-radius: 50px; font-weight: 700; cursor: pointer; font-size: 1rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    button.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(67, 97, 238, 0.4); }
+
+    footer { text-align: center; padding: 3rem; border-top: 1px solid var(--border); margin-top: 4rem; background: #fff; }
+
+    /* MOBILE OPTIMIZATIONS */
+    @media (max-width: 768px) {
+      .sim-info h2 { font-size: 1.75rem; }
+      .sim-container { padding: 1rem; }
+      .sim-row { padding-top: 0; gap: 1.5rem; }
+      .header-bar { padding: 0 1rem; }
+      .brand-name { font-size: 1.25rem; }
+      .back-btn { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+      .canvas-box { aspect-ratio: 4/3; } 
+    }
+  </style>
+</head>
+<body>
+
+  <header class="nouveau-header">
+    <div class="header-bar">
+      <a href="#" class="logo-area">
+        <div class="logo-box"><i class="fas fa-atom"></i></div>
+        <span class="brand-name">The Nouveau Way</span>
+      </a>
+      <a href="explore.html" class="back-btn">
+        <i class="fas fa-arrow-left"></i> Back to Library
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <div class="sim-container">
+      <section class="sim-row">
+        
+        <div class="sim-info animate-in">
+          <span class="sim-tag">Thermochemistry</span>
+          <h2>Reaction Energy Profiler</h2>
+          <p>Analyze how the balance between <b>Bond Breaking</b> and <b>Bond Forming</b> energy determines if a reaction is Exothermic or Endothermic.</p>
+          
+          <div style="background: #f1f5f9; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+            <strong>Key Principles:</strong><br>
+            • $\Delta H = E_{\text{absorbed}} - E_{\text{released}}$<br>
+            • Exothermic: Releases heat (Temp $\uparrow$)<br>
+            • Endothermic: Absorbs heat (Temp $\downarrow$)
+          </div>
+
+          <div id="ctrl-reaction" class="controls"></div>
+        </div>
+
+        <div class="canvas-box animate-in">
+          <div id="hud-reaction" class="hud"></div>
+          <canvas id="canvas-reaction"></canvas>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="logo-box" style="margin: 0 auto 1rem; color:white;"><i class="fas fa-atom"></i></div>
+    <h3>The Nouveau Way</h3>
+    <p>Advanced Physics Simulation Platform</p>
+    <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted);">&copy; 2026 Mr Daniel Bishoy. Engineered for Excellence.</p>
+  </footer>
+
+<script>
+/* =========================================
+   UTILITIES & ENGINE
+   ========================================= */
+const SIMS = [];
+
+function createControls(id, items) {
+  const panel = document.getElementById(id);
+  if(!panel) return;
+  panel.innerHTML = '';
+
+  items.forEach(item => {
+    const group = document.createElement('div');
+    group.className = 'ctrl-group';
+
+    if (item.type === 'button') {
+      const btn = document.createElement('button');
+      btn.className = 'btn-primary';
+      btn.innerHTML = item.label; 
+      btn.onclick = item.action;
+      group.appendChild(btn);
+    } else {
+      const header = document.createElement('div');
+      header.className = 'ctrl-header';
+      const valSpan = document.createElement('span');
+      valSpan.className = 'ctrl-val';
+      valSpan.innerText = item.obj[item.prop].toFixed(item.prec||0) + (item.unit || '');
+      
+      header.innerHTML = `<span>${item.label}</span>`;
+      header.appendChild(valSpan);
+      
+      const input = document.createElement('input');
+      input.type = 'range';
+      input.min = item.min; input.max = item.max;
+      input.step = item.step || (item.max - item.min)/100;
+      input.value = item.obj[item.prop];
+      
+      input.oninput = (e) => {
+        const v = parseFloat(e.target.value);
+        item.obj[item.prop] = v;
+        valSpan.innerText = v.toFixed(item.prec||0) + (item.unit || '');
+        if(item.onChange) item.onChange(v);
+      };
+
+      group.appendChild(header);
+      group.appendChild(input);
+    }
+    panel.appendChild(group);
+  });
+}
+
+function updateHUD(id, html) {
+  const hud = document.getElementById('hud-' + id);
+  if(hud) hud.innerHTML = html;
+}
+
+/* =========================================
+   SIMULATION LOGIC: REACTION PROFILER
+   ========================================= */
+
+function initReactionProfiler() {
+  const canvas = document.getElementById('canvas-reaction');
+  const ctx = canvas.getContext('2d');
+  
+  // Physics State
+  const physics = {
+    bondBreak: 400, // Energy Input (Activation)
+    bondForm: 600,  // Energy Output
+    baseTemp: 298   // Kelvin
+  };
+
+  // Particle System
+  const particles = [];
+  const numParticles = 40;
+  for(let i=0; i<numParticles; i++) {
+    particles.push({
+      x: Math.random() * 100, y: Math.random() * 100,
+      vx: (Math.random()-0.5), vy: (Math.random()-0.5),
+      r: 2 + Math.random()*2
+    });
+  }
+
+  createControls('ctrl-reaction', [
+    { label: 'Energy to Break Bonds (Input)', obj: physics, prop: 'bondBreak', min: 100, max: 1000, unit: ' kJ' },
+    { label: 'Energy Released Forming (Output)', obj: physics, prop: 'bondForm', min: 100, max: 1000, unit: ' kJ' },
+    { type: 'button', label: '<i class="fas fa-rotate-right"></i> Reset', action: () => window.location.reload() }
+  ]);
+
+  SIMS.push((dt, time) => {
+    // 1. Setup Canvas
+    const w = canvas.parentElement.clientWidth;
+    const h = canvas.parentElement.clientHeight;
+    canvas.width = w; canvas.height = h;
+
+    // 2. Calculations
+    const netEnergy = physics.bondForm - physics.bondBreak; // Positive = Exothermic
+    const isExo = netEnergy > 0;
+    
+    // Temp Scaling
+    const tempChange = netEnergy * 0.2; 
+    const currentTemp = physics.baseTemp + tempChange;
+    
+    // 3. Background (Beaker Environment)
+    let bgCol;
+    if(netEnergy > 0) {
+      const intensity = Math.min(1, netEnergy / 600);
+      bgCol = `rgba(${15 + 100*intensity}, ${23}, ${42}, 1)`; // Dark to Reddish
+    } else {
+      const intensity = Math.min(1, Math.abs(netEnergy) / 600);
+      bgCol = `rgba(${15}, ${23 + 20*intensity}, ${42 + 100*intensity}, 1)`; // Dark to Blueish
+    }
+    ctx.fillStyle = bgCol;
+    ctx.fillRect(0,0,w,h);
+    
+    // 4. BIGGER GRAPH AREA
+    // Occupy 60% of the screen width on the right
+    const graphW = w * 0.6;
+    const graphH = h * 0.75;
+    const graphX = w - graphW - 20; // 20px padding from right
+    const graphY = (h - graphH) / 2;
+    
+    // Glassy Graph Background
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.6)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); 
+    ctx.roundRect(graphX, graphY, graphW, graphH, 24);
+    ctx.fill(); ctx.stroke();
+    
+    // Grid Lines
+    ctx.beginPath();
+    for(let i=1; i<5; i++) {
+        let yLine = graphY + (graphH * i/5);
+        ctx.moveTo(graphX, yLine); ctx.lineTo(graphX+graphW, yLine);
+    }
+    ctx.stroke();
+
+    // Axes
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(graphX + 40, graphY + 20); // Top Y
+    ctx.lineTo(graphX + 40, graphY + graphH - 40); // Origin
+    ctx.lineTo(graphX + graphW - 20, graphY + graphH - 40); // Right X
+    ctx.stroke();
+    
+    // Labels
+    ctx.fillStyle = '#94a3b8'; ctx.font = '700 12px Inter';
+    ctx.fillText("POTENTIAL ENERGY", graphX + 50, graphY + 30);
+    ctx.fillText("REACTION PROGRESS", graphX + graphW/2 - 50, graphY + graphH - 15);
+
+    // 5. DRAW THE CURVE
+    const yBase = graphY + graphH - 100; // Zero visual baseline
+    const yScale = 0.25; // Scale factor
+    
+    const yReactants = yBase - (200 * yScale); 
+    const yPeak = yReactants - (physics.bondBreak * yScale); // Activation peak
+    const yProducts = yPeak + (physics.bondForm * yScale); // Product level
+    
+    // Coordinates
+    const xStart = graphX + 40;
+    const xReactEnd = xStart + 60;
+    const xPeak = xReactEnd + 80;
+    const xProdStart = xPeak + 80;
+    const xProdEnd = graphX + graphW - 20;
+
+    // Gradient Fill for Curve Area
+    const grad = ctx.createLinearGradient(0, yPeak, 0, graphH);
+    grad.addColorStop(0, isExo ? 'rgba(239, 68, 68, 0.2)' : 'rgba(59, 130, 246, 0.2)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    
+    ctx.beginPath();
+    ctx.moveTo(xStart, yReactants);
+    ctx.lineTo(xReactEnd, yReactants);
+    ctx.bezierCurveTo(xReactEnd + 40, yReactants, xPeak - 40, yPeak, xPeak, yPeak);
+    ctx.bezierCurveTo(xPeak + 40, yPeak, xProdStart - 40, yProducts, xProdStart, yProducts);
+    ctx.lineTo(xProdEnd, yProducts);
+    ctx.lineTo(xProdEnd, graphY + graphH - 40); // Close shape down
+    ctx.lineTo(xStart, graphY + graphH - 40); // Close shape left
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Main Stroke (Neon Effect)
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = isExo ? '#ef4444' : '#3b82f6';
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    
+    ctx.beginPath();
+    ctx.moveTo(xStart, yReactants);
+    ctx.lineTo(xReactEnd, yReactants);
+    // Smooth Hump
+    ctx.bezierCurveTo(xReactEnd + 40, yReactants, xPeak - 40, yPeak, xPeak, yPeak);
+    ctx.bezierCurveTo(xPeak + 40, yPeak, xProdStart - 40, yProducts, xProdStart, yProducts);
+    // Big Product Line
+    ctx.lineTo(xProdEnd, yProducts);
+    ctx.stroke();
+    
+    ctx.shadowBlur = 0; // Reset
+
+    // 6. ANNOTATIONS
+    ctx.font = '600 14px Outfit';
+    
+    // Reactant Label
+    ctx.fillStyle = '#fff';
+    ctx.fillText("Reactants", xStart + 5, yReactants - 10);
+    
+    // Product Label (On the big line)
+    ctx.fillStyle = isExo ? '#fca5a5' : '#93c5fd';
+    ctx.font = '800 16px Outfit';
+    ctx.fillText("Products", xProdStart + 10, yProducts - 10);
+    
+    // Arrows (Visualizing Energies)
+    const arrowX_Break = xPeak - 40;
+    const arrowX_Form = xPeak + 40;
+    
+    // Break Arrow (Up)
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(arrowX_Break, yReactants); ctx.lineTo(arrowX_Break, yPeak); ctx.stroke();
+    
+    ctx.fillStyle = '#ef4444'; ctx.font = 'bold 12px Inter';
+    ctx.fillText(`+${physics.bondBreak}`, arrowX_Break - 35, (yReactants + yPeak)/2);
+
+    // Form Arrow (Down) - Connected from Peak level
+    ctx.beginPath(); ctx.moveTo(arrowX_Form, yPeak); ctx.lineTo(arrowX_Form, yProducts); ctx.stroke();
+    
+    ctx.fillStyle = '#22c55e';
+    ctx.fillText(`-${physics.bondForm}`, arrowX_Form + 5, (yPeak + yProducts)/2);
+    ctx.setLineDash([]);
+
+    // 7. PARTICLES (Left Side)
+    const speedFactor = (currentTemp / 298) * 2;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0,0, graphX, h); ctx.clip();
+    
+    particles.forEach(p => {
+      p.x += p.vx * speedFactor; p.y += p.vy * speedFactor;
+      if(p.x < 0 || p.x > graphX) p.vx *= -1;
+      if(p.y < 0 || p.y > h) p.vy *= -1;
+      if(p.x > graphX) p.x = graphX - 1; if(p.x < 0) p.x=1;
+      if(p.y > h) p.y = h - 1; if(p.y < 0) p.y=1;
+
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(255, 255, 255, 0.5)`; ctx.fill();
+    });
+    ctx.restore();
+
+    // 8. HUD Update
+    let typeText = "Neutral";
+    let typeColor = "#fff";
+    if(Math.abs(netEnergy) < 10) {
+        typeText = "Thermal Equilibrium";
+    } else if (isExo) {
+        typeText = "EXOTHERMIC REACTION";
+        typeColor = "#ef4444";
+    } else {
+        typeText = "ENDOTHERMIC REACTION";
+        typeColor = "#3b82f6";
+    }
+
+    const hudHTML = `
+      <span style="color:${typeColor}; font-size:1.1em; font-family:'Outfit';">${typeText}</span>
+      --------------------------
+      Energy In  (Break): <span style="color:#ef4444">${physics.bondBreak} kJ</span>
+      Energy Out (Form) : <span style="color:#22c55e">${physics.bondForm} kJ</span>
+      
+      NET CHANGE (ΔH)   : ${isExo ? '-' : '+'}${Math.abs(netEnergy)} kJ
+      Surroundings Temp : ${currentTemp.toFixed(0)} K
+    `;
+    updateHUD('reaction', hudHTML);
+  });
+}
+
+/* =========================================
+   INITIALIZATION
+   ========================================= */
+document.addEventListener("DOMContentLoaded", () => {
+  renderMathInElement(document.body, {
+    delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]
+  });
+
+  anime({
+    targets: '.animate-in', opacity: [0, 1], translateY: [20, 0],
+    delay: anime.stagger(100), easing: 'easeOutQuad', duration: 800
+  });
+
+  initReactionProfiler();
+
+  let last = 0, time = 0;
+  function loop(now) {
+    const dt = Math.min((now - last)/1000, 0.05);
+    last = now; time += dt;
+    SIMS.forEach(sim => sim(dt, time));
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+});
+</script>
+</body>
+</html>
