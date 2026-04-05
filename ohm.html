@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ohm's Law & Electric Current — The Nouveau Way</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3/lib/anime.min.js"></script>
+  <style>
+    :root {
+      --primary:#4361ee; --primary-soft:rgba(67,97,238,.1);
+      --nu-gradient:linear-gradient(135deg,#4361ee,#4cc9f0);
+      --bg:#f8fafc; --text:#1e293b; --text-muted:#64748b;
+      --border:#e2e8f0; --glass:rgba(255,255,255,.9);
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6; transition: direction 0.3s ease;}
+    
+    /* Arabic Font Swap */
+    body[dir="rtl"] { font-family: 'Cairo', 'Inter', system-ui, sans-serif; }
+    
+    .nouveau-header{position:sticky;top:0;z-index:1000;background:var(--glass);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:.75rem 0;}
+    .header-bar{max-width:1200px;margin:0 auto;padding:0 1.5rem;display:flex;justify-content:space-between;align-items:center;}
+    .logo-area{display:flex;align-items:center;gap:1rem;text-decoration:none;color:inherit;}
+    .logo-box{width:42px;height:42px;background:var(--nu-gradient);border-radius:12px;color:#fff;display:grid;place-items:center;font-size:1.2rem;flex-shrink:0;}
+    .brand-name{font-family:'Outfit',sans-serif;font-weight:800;font-size:1.5rem;letter-spacing:-.02em; direction: ltr;}
+    body[dir="rtl"] .brand-name { font-family: 'Outfit', 'Cairo', sans-serif; }
+    
+    .header-controls { display: flex; gap: 0.75rem; }
+    .back-btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1.2rem;border-radius:12px;text-decoration:none;font-weight:600;font-size:.9rem;background:#fff;border:1px solid var(--border);color:var(--text);transition:all .3s ease;cursor:pointer;}
+    .back-btn:hover{border-color:var(--primary);color:var(--primary);transform:translateY(-2px);}
+    
+    /* High Glow Animation for Language Button */
+    @keyframes superGlow {
+        0% { box-shadow: 0 0 5px var(--primary), 0 0 10px var(--primary); transform: scale(1); }
+        50% { box-shadow: 0 0 20px #4cc9f0, 0 0 30px #4cc9f0; transform: scale(1.05); border-color: #4cc9f0; color: #4cc9f0; }
+        100% { box-shadow: 0 0 5px var(--primary), 0 0 10px var(--primary); transform: scale(1); }
+    }
+    #lang-toggle {
+        animation: superGlow 2s infinite ease-in-out;
+        border: 2px solid var(--primary);
+        font-weight: 800;
+    }
+    
+    .sim-container{max-width:1400px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+    .sim-row{display:flex;flex-direction:column;gap:2rem;}
+    @media(min-width:1024px){.sim-row{flex-direction:row;align-items:flex-start;gap:2rem;}}
+    
+    .sim-info{flex:1; min-width: 350px;}
+    .sim-info h2{font-family:'Outfit',sans-serif;margin:.5rem 0 1rem;font-size:2rem;font-weight:800;}
+    .sim-tag{display:inline-block;background:var(--primary-soft);color:var(--primary);padding:.4rem 1rem;border-radius:20px;font-weight:600;font-size:.85rem;margin-bottom:.5rem;}
+    
+    .canvas-column {flex:2; display:flex; flex-direction:column; gap:1.5rem; width: 100%;}
+    .canvas-box{background:#0f172a;border-radius:24px;aspect-ratio:16/9;position:relative;overflow:hidden;box-shadow:0 20px 25px -5px rgba(0,0,0,.15); width: 100%;}
+    .canvas-box::before{content:'';position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:20px 20px;}
+    canvas{display:block;width:100%;height:100%;position:relative;z-index:1; direction: ltr;} 
+    
+    .controls{margin-top:1rem;background:#fff;padding:1.25rem;border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 6px -1px rgba(0,0,0,.02);}
+    .ctrl-group{margin-bottom:.85rem;}
+    .ctrl-header{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:.88rem;margin-bottom:.4rem;color:var(--text);}
+    
+    /* Upgraded Input styling for typing numbers */
+    .ctrl-val{font-family:'Courier New',monospace;color:var(--primary);font-weight:700;background:var(--primary-soft);border-radius:6px; direction: ltr; outline: none;}
+    .ctrl-val::-webkit-inner-spin-button, .ctrl-val::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    
+    input[type=range]{width:100%;accent-color:var(--primary);cursor:pointer;height:6px;border-radius:3px;}
+    
+    .mode-toggle{display:flex;gap:.5rem;margin-bottom:.75rem;}
+    .mode-btn{flex:1;padding:8px;border-radius:8px;border:2px solid var(--border);background:#fff;font-weight:600;font-size:.82rem;cursor:pointer;transition:all .2s;color:var(--text-muted);}
+    .mode-btn.active{border-color:var(--primary);background:var(--primary-soft);color:var(--primary);}
+    
+    .btn-group {display: flex; gap: 0.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem;}
+    .action-btn {flex: 1; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: #f8fafc; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: 0.2s; color: var(--text);}
+    .action-btn:hover {background: var(--primary-soft); color: var(--primary); border-color: var(--primary);}
+    .branch-box {border: 1px dashed var(--border); padding: 12px; border-radius: 8px; margin-bottom: 12px; background: #fafafa;}
+
+    .data-panel {background:#fff; border:1px solid var(--border); border-radius:16px; padding:1.5rem; box-shadow:0 4px 6px -1px rgba(0,0,0,.02); overflow-x: auto;}
+    .data-panel h3 {margin-top: 0; font-family: 'Outfit', sans-serif; font-size: 1.2rem; color: var(--text); border-bottom: 2px solid var(--primary-soft); padding-bottom: 0.5rem;}
+    .data-grid {width: 100%; border-collapse: collapse; min-width: 500px;}
+    .data-grid th {text-align: start; padding: 0.75rem 0.5rem; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border);}
+    .data-grid td {padding: 0.75rem 0.5rem; font-family: 'Courier New', monospace; font-weight: 600; font-size: 0.95rem; border-bottom: 1px solid var(--border); text-align: start;}
+    .data-grid tr:last-child td {border-bottom: none;}
+    .highlight-row {background: var(--primary-soft);}
+    
+    .laws-panel p { margin: 0.4rem 0; color: var(--text); font-size: 0.9rem;}
+    .trend-arrow { font-size: 0.85em; margin-inline-start: 6px; }
+    
+    footer{text-align:center;padding:3rem;border-top:1px solid var(--border);margin-top:4rem;background:#fff;}
+
+    @media(max-width:1024px){.canvas-box {aspect-ratio: 4/3;}}
+    @media(max-width:768px){
+      .sim-info h2{font-size:1.6rem;}
+      .sim-container{padding:1.5rem 1rem 3rem;}
+      .canvas-box{aspect-ratio: 1/1;} 
+    }
+    @media(max-width:480px){
+      .header-bar{flex-direction:column;gap:.75rem;padding:.75rem 1rem;}
+      .header-controls {width: 100%;}
+      .back-btn{flex: 1; justify-content:center;}
+      .data-grid td {font-size: 0.85rem;}
+    }
+  </style>
+</head>
+<body>
+
+<header class="nouveau-header">
+  <div class="header-bar">
+    <a href="#" class="logo-area">
+      <div class="logo-box"><i class="fas fa-atom"></i></div>
+      <span class="brand-name">The Nouveau Way</span>
+    </a>
+    <div class="header-controls">
+        <button class="back-btn" id="lang-toggle" onclick="toggleLanguage()"><i class="fas fa-globe"></i> عربي</button>
+        <button class="back-btn" onclick="location.reload()"><i class="fas fa-redo"></i> <span data-i18n="reset">Reset Sim</span></button>
+    </div>
+  </div>
+</header>
+
+<div style="background: var(--primary); color: white; text-align: center; padding: 0.75rem 1.5rem; font-weight: 500; font-size: 0.95rem; box-shadow: inset 0 -2px 10px rgba(0,0,0,0.1);">
+  <i class="fas fa-bolt" style="color: #fde047; margin-inline-end: 8px;"></i>
+  <strong><span data-i18n="eq_title">Essential Question:</span></strong> <span data-i18n="eq_text">How can we wire a building so that turning off one room doesn't shut down the entire grid?</span>
+</div>
+
+<main>
+  <div class="sim-container">
+    <section class="sim-row">
+      <div class="sim-info">
+        <span class="sim-tag" data-i18n="tag">Logic Solver</span>
+        <h2 data-i18n="title">Combination Circuit Modeler</h2>
+        
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="btnSeries" onclick="setMode('series')"><span data-i18n="btn_series">⚡ Series</span></button>
+          <button class="mode-btn" id="btnParallel" onclick="setMode('parallel')"><span data-i18n="btn_parallel">⚡ Parallel / Mixed</span></button>
+        </div>
+
+        <div id="predict-panel" class="controls" style="background: var(--primary-soft); border: 2px solid var(--primary);">
+          <div class="ctrl-header" style="color: var(--primary); font-size: 1rem;" data-i18n="predict_req"><i class="fas fa-brain"></i> <strong>Prediction Required</strong></div>
+          <p style="font-size: 0.9rem; margin-bottom: 15px; font-weight: 500;" data-i18n="predict_q">Before activating: If we add more lamps in a <strong>Series</strong> circuit, what will happen to the total current?</p>
+          <div style="display: flex; gap: 8px;">
+            <button class="back-btn" style="flex: 1; justify-content: center;" onclick="unlockCircuit()"><span data-i18n="pred_up"><i class="fas fa-arrow-up"></i> Up</span></button>
+            <button class="back-btn" style="flex: 1; justify-content: center;" onclick="unlockCircuit()"><span data-i18n="pred_down"><i class="fas fa-arrow-down"></i> Down</span></button>
+            <button class="back-btn" style="flex: 1; justify-content: center;" onclick="unlockCircuit()"><span data-i18n="pred_same"><i class="fas fa-equals"></i> Same</span></button>
+          </div>
+        </div>
+
+        <div class="controls laws-panel" style="background: #f8fafc; border-color: var(--primary);">
+            <div class="ctrl-header" style="color: var(--primary); font-size: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 8px;" data-i18n="notes_title"><i class="fas fa-book"></i> <strong>Chapter 1 Notes</strong></div>
+            <p><span data-i18n="notes_series"><strong>Series (Constant $I$):</strong></span> <span dir="ltr" style="display:inline-block;">$$R_{eq} = R_1 + R_2 + ... + R_n$$</span></p>
+            <p><span data-i18n="notes_parallel"><strong>Parallel (Constant $V$):</strong></span> <span dir="ltr" style="display:inline-block;">$$\frac{1}{R_{eq}} = \frac{1}{R_1} + \frac{1}{R_2} + ... + \frac{1}{R_n}$$</span></p>
+            <p><span data-i18n="notes_ohm"><strong>Ohm's Law:</strong></span> <span dir="ltr" style="display:inline-block;">$$V = I \cdot R$$</span></p>
+            <p><span data-i18n="notes_power"><strong>Power:</strong></span> <span dir="ltr" style="display:inline-block;">$$P = V \cdot I = I^2 \cdot R = \frac{V^2}{R}$$</span></p>
+            <p><span data-i18n="notes_term"><strong>Terminal Voltage:</strong></span> <span dir="ltr" style="display:inline-block;">$$V_{term} = V_B - I \cdot r$$</span></p>
+        </div>
+
+        <div id="ctrl-ohm" class="controls"></div>
+        
+        <div id="branch-controls" class="btn-group" style="display:none; margin-top: 15px;">
+            <button class="action-btn" onclick="addBranch()"><span data-i18n="add_branch"><i class="fas fa-plus"></i> Add Parallel Branch</span></button>
+            <button class="action-btn" onclick="removeBranch()"><span data-i18n="rem_branch"><i class="fas fa-minus"></i> Remove Branch</span></button>
+        </div>
+      </div>
+
+      <div class="canvas-column">
+        <div class="canvas-box">
+          <canvas id="canvas-ohm"></canvas>
+        </div>
+
+        <div class="data-panel">
+            <h3 data-i18n="data_title"><i class="fas fa-table"></i> Telemetry Data <span style="font-size:0.7em; color:var(--text-muted); font-weight:normal;">(Real-Time Dynamics)</span></h3>
+            <table class="data-grid">
+                <thead>
+                    <tr>
+                        <th data-i18n="th_comp">Component</th>
+                        <th data-i18n="th_res">Resistance (Ω)</th>
+                        <th data-i18n="th_vol">Voltage (V)</th>
+                        <th data-i18n="th_cur">Current (A)</th>
+                        <th data-i18n="th_pow">Power (W)</th>
+                    </tr>
+                </thead>
+                <tbody id="data-grid-body">
+                    </tbody>
+            </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="logo-box" style="margin:0 auto 1rem;color:white;"><i class="fas fa-atom"></i></div>
+  <h3 class="brand-name">The Nouveau Way</h3>
+  <p data-i18n="footer_sub">Advanced Physics Simulation Platform</p>
+  <p style="margin-top:1rem;font-size:.85rem;color:var(--text-muted);">&copy; 2026 Mr Daniel Bishoy. Engineered for Excellence.</p>
+</footer>
+
+<script>
+/* =============================================
+   TRANSLATION ENGINE (i18n)
+   ============================================= */
+const i18n = {
+  'en': {
+    'reset': 'Reset Sim',
+    'eq_title': 'Essential Question:',
+    'eq_text': 'How can we wire a building so that turning off one room doesn\'t shut down the entire grid?',
+    'tag': 'Logic Solver',
+    'title': 'Combination Circuit Modeler',
+    'btn_series': '⚡ Series',
+    'btn_parallel': '⚡ Parallel / Mixed',
+    'predict_req': '<i class="fas fa-brain"></i> <strong>Prediction Required</strong>',
+    'predict_q': 'Before activating: If we add more lamps in a <strong>Series</strong> circuit, what will happen to the total current?',
+    'pred_up': '<i class="fas fa-arrow-up"></i> Up',
+    'pred_down': '<i class="fas fa-arrow-down"></i> Down',
+    'pred_same': '<i class="fas fa-equals"></i> Same',
+    'notes_title': '<i class="fas fa-book"></i> <strong>Chapter 1 Notes</strong>',
+    'notes_series': '<strong>Series (Constant $I$):</strong>',
+    'notes_parallel': '<strong>Parallel (Constant $V$):</strong>',
+    'notes_ohm': '<strong>Ohm\'s Law:</strong>',
+    'notes_power': '<strong>Power:</strong>',
+    'notes_term': '<strong>Terminal Voltage:</strong>',
+    'add_branch': '<i class="fas fa-plus"></i> Add Parallel Branch',
+    'rem_branch': '<i class="fas fa-minus"></i> Remove Branch',
+    'data_title': '<i class="fas fa-table"></i> Telemetry Data <span style="font-size:0.7em; color:var(--text-muted); font-weight:normal;">(Real-Time Dynamics)</span>',
+    'th_comp': 'Component',
+    'th_res': 'Resistance (Ω)',
+    'th_vol': 'Voltage (V)',
+    'th_cur': 'Current (A)',
+    'th_pow': 'Power (W)',
+    'sys_tot': 'System Total',
+    'main_line': 'Main Line',
+    'lamp': 'Lamp',
+    'vb': 'Battery EMF V<sub>B</sub>',
+    'rin': 'Internal Resistance r',
+    'rmain': 'Main Series Lamp R<sub>main</sub>',
+    'series_loop': '<i class="fas fa-link"></i> Series Loop',
+    'par_branch': '<i class="fas fa-stream"></i> Parallel Branch',
+    'add_lamp': '<i class="fas fa-plus"></i> Add Lamp',
+    'rem_lamp': '<i class="fas fa-minus"></i> Remove Lamp',
+    'footer_sub': 'Advanced Physics Simulation Platform'
+  },
+  'ar': {
+    'reset': 'إعادة ضبط',
+    'eq_title': 'سؤال جوهري:',
+    'eq_text': 'كيف يمكننا توصيل أسلاك مبنى بحيث لا يؤدي إيقاف تشغيل غرفة واحدة إلى إيقاف تشغيل الشبكة بالكامل؟',
+    'tag': 'مُحلّل المنطق',
+    'title': 'نموذج الدوائر المركبة',
+    'btn_series': '⚡ توالي',
+    'btn_parallel': '⚡ توازي / مركب',
+    'predict_req': '<i class="fas fa-brain"></i> <strong>مطلوب توقع</strong>',
+    'predict_q': 'قبل التفعيل: إذا أضفنا المزيد من المصابيح في دائرة <strong>توالي</strong>، ماذا سيحدث للتيار الكلي؟',
+    'pred_up': '<i class="fas fa-arrow-up"></i> يزداد',
+    'pred_down': '<i class="fas fa-arrow-down"></i> يقل',
+    'pred_same': '<i class="fas fa-equals"></i> ثابت',
+    'notes_title': '<i class="fas fa-book"></i> <strong>ملاحظات الفصل الأول</strong>',
+    'notes_series': '<strong>توالي ($I$ ثابت):</strong>',
+    'notes_parallel': '<strong>توازي ($V$ ثابت):</strong>',
+    'notes_ohm': '<strong>قانون أوم:</strong>',
+    'notes_power': '<strong>القدرة:</strong>',
+    'notes_term': '<strong>الجهد الطرفي:</strong>',
+    'add_branch': '<i class="fas fa-plus"></i> إضافة فرع توازي',
+    'rem_branch': '<i class="fas fa-minus"></i> إزالة فرع',
+    'data_title': '<i class="fas fa-table"></i> بيانات القياس <span style="font-size:0.7em; color:var(--text-muted); font-weight:normal;">(ديناميكيات الوقت الفعلي)</span>',
+    'th_comp': 'المكون',
+    'th_res': 'المقاومة (Ω)',
+    'th_vol': 'الجهد (V)',
+    'th_cur': 'التيار (A)',
+    'th_pow': 'القدرة (W)',
+    'sys_tot': 'إجمالي النظام',
+    'main_line': 'الخط الرئيسي',
+    'lamp': 'مصباح',
+    'vb': 'القوة الدافعة الكهربية V<sub>B</sub>',
+    'rin': 'المقاومة الداخلية r',
+    'rmain': 'مصباح التوالي الرئيسي R<sub>main</sub>',
+    'series_loop': '<i class="fas fa-link"></i> مسار التوالي',
+    'par_branch': '<i class="fas fa-stream"></i> فرع توازي',
+    'add_lamp': '<i class="fas fa-plus"></i> إضافة مصباح',
+    'rem_lamp': '<i class="fas fa-minus"></i> إزالة مصباح',
+    'footer_sub': 'منصة محاكاة الفيزياء المتقدمة'
+  }
+};
+
+let currentLang = 'en';
+function t(key) { return i18n[currentLang][key]; }
+
+function toggleLanguage() {
+    currentLang = currentLang === 'en' ? 'ar' : 'en';
+    document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = currentLang;
+    document.getElementById('lang-toggle').innerHTML = currentLang === 'ar' ? '<i class="fas fa-globe"></i> English' : '<i class="fas fa-globe"></i> عربي';
+    
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.innerHTML = t(el.getAttribute('data-i18n'));
+    });
+    makeControls();
+}
+
+/* =============================================
+   STATE & COGNITIVE GATING
+   ============================================= */
+const cfg = { 
+    vb: 12, 
+    r: 1, 
+    rmain: 0, 
+    branches: [ [8], [12], [16] ], 
+    mode: 'series' 
+};
+
+let circuitActive = false; 
+const trends = {}; 
+
+function setMode(m) {
+  cfg.mode = m;
+  document.getElementById('btnSeries').classList.toggle('active', m==='series');
+  document.getElementById('btnParallel').classList.toggle('active', m==='parallel');
+  document.getElementById('branch-controls').style.display = m === 'parallel' ? 'flex' : 'none';
+  
+  if(m === 'series') {
+      let flat = [];
+      cfg.branches.forEach(b => flat = flat.concat(b));
+      cfg.branches = [flat.slice(0, 4)]; 
+  } else {
+      if(cfg.branches.length === 1 && cfg.branches[0].length > 1) {
+          let newB = [];
+          cfg.branches[0].forEach(R => newB.push([R]));
+          cfg.branches = newB.slice(0, 4); 
+      } else if (cfg.branches.length === 1) {
+          cfg.branches.push([10]); 
+      }
+  }
+  
+  makeControls();
+  resetParticles();
+}
+
+function unlockCircuit() {
+  circuitActive = true;
+  document.getElementById('predict-panel').style.display = 'none';
+}
+
+/* =============================================
+   TOPOLOGY CONTROLS
+   ============================================= */
+function addBranch() { if(cfg.branches.length < 4) { cfg.branches.push([10]); topologyChanged(); } }
+function removeBranch() { if(cfg.branches.length > 1) { cfg.branches.pop(); topologyChanged(); } }
+function addLampToBranch(bIdx) { if(cfg.branches[bIdx].length < 4) { cfg.branches[bIdx].push(10); topologyChanged(); } }
+function removeLampFromBranch(bIdx) { if(cfg.branches[bIdx].length > 1) { cfg.branches[bIdx].pop(); topologyChanged(); } }
+function topologyChanged() { makeControls(); resetParticles(); }
+
+/* =============================================
+   PHYSICS ENGINE
+   ============================================= */
+function calcCircuit() {
+  let Rext = 0, I = 0, Vterm = 0, Vmain = 0, Vpar = 0;
+  let branchResults = [];
+  
+  if (cfg.mode === 'series') {
+    let Rpar = cfg.branches[0].reduce((sum, R) => sum + R, 0) || 0.001;
+    Rext = cfg.rmain + Rpar;
+    I = cfg.vb / (Rext + cfg.r);
+    Vterm = cfg.vb - I * cfg.r;
+    Vmain = I * cfg.rmain;
+    Vpar = Vterm - Vmain;
+    
+    let bRes = { R: Rpar, V: Vpar, I: I, P: Vpar * I, lamps: [] };
+    cfg.branches[0].forEach(R => {
+        let vLamp = I * R;
+        bRes.lamps.push({ R: R, V: vLamp, I: I, P: I * vLamp });
+    });
+    branchResults.push(bRes);
+
+  } else {
+    let invR = 0;
+    cfg.branches.forEach(branch => {
+        let Rbranch = branch.reduce((sum, R) => sum + R, 0) || 0.001;
+        invR += (1 / Rbranch);
+    });
+    
+    let Rpar = invR > 0 ? 1 / invR : 0.001;
+    Rext = cfg.rmain + Rpar;
+    I = cfg.vb / (Rext + cfg.r);
+    Vterm = cfg.vb - I * cfg.r;
+    Vmain = I * cfg.rmain;
+    Vpar = Vterm - Vmain; 
+    
+    cfg.branches.forEach(branch => {
+        let Rbranch = branch.reduce((sum, R) => sum + R, 0) || 0.001;
+        let Ibranch = Vpar / Rbranch;
+        let bRes = { R: Rbranch, V: Vpar, I: Ibranch, P: Vpar * Ibranch, lamps: [] };
+        branch.forEach(R => {
+            let vLamp = Ibranch * R;
+            bRes.lamps.push({ R: R, V: vLamp, I: Ibranch, P: Ibranch * vLamp });
+        });
+        branchResults.push(bRes);
+    });
+  }
+  
+  const Ptot = I * Vterm;
+  const Pmain = I * Vmain;
+  return { Rext, I, Vterm, Vmain, Ptot, Pmain, branchResults };
+}
+
+/* =============================================
+   UI CONTROLS & 15-SEC ARROW SYSTEM
+   ============================================= */
+function makeControls() {
+  const panel = document.getElementById('ctrl-ohm');
+  panel.innerHTML = '';
+  
+  const baseBox = document.createElement('div');
+  baseBox.className = 'branch-box';
+  const baseSliders = [
+    { label: t('vb'), prop:'vb', min:1, max:24, step:.5, unit:' V', prec:1 },
+    { label: t('rin'), prop:'r',  min:0, max:5,  step:.1, unit:' Ω', prec:1 },
+    { label: t('rmain'), prop:'rmain', min:0, max:30, step:1, unit:' Ω', prec:0 }
+  ];
+  baseSliders.forEach(s => {
+    baseBox.appendChild(createSliderGroup(s.label, cfg[s.prop], s.min, s.max, s.step, s.unit, s.prec, (val) => cfg[s.prop] = val));
+  });
+  panel.appendChild(baseBox);
+
+  cfg.branches.forEach((branch, bIdx) => {
+     const bBox = document.createElement('div');
+     bBox.className = 'branch-box';
+     const bHeader = document.createElement('div');
+     bHeader.style.fontWeight = 'bold'; bHeader.style.marginBottom = '8px'; bHeader.style.fontSize = '0.85rem';
+     bHeader.style.color = 'var(--primary)';
+     bHeader.innerHTML = cfg.mode === 'series' ? t('series_loop') : `${t('par_branch')} ${bIdx + 1}`;
+     bBox.appendChild(bHeader);
+     
+     branch.forEach((R, lIdx) => {
+         const lbl = cfg.mode === 'series' ? `${t('lamp')} R<sub>${lIdx+1}</sub>` : `${t('lamp')} R<sub>${bIdx+1}.${lIdx+1}</sub>`;
+         bBox.appendChild(createSliderGroup(lbl, R, 1, 60, 1, ' Ω', 0, (val) => cfg.branches[bIdx][lIdx] = val));
+     });
+     
+     const btnDiv = document.createElement('div');
+     btnDiv.className = 'btn-group';
+     btnDiv.innerHTML = `
+        <button class="action-btn" onclick="addLampToBranch(${bIdx})">${t('add_lamp')}</button>
+        <button class="action-btn" onclick="removeLampFromBranch(${bIdx})">${t('rem_lamp')}</button>
+     `;
+     bBox.appendChild(btnDiv);
+     panel.appendChild(bBox);
+  });
+}
+
+function createSliderGroup(label, value, min, max, step, unit, prec, onChange) {
+    const g = document.createElement('div'); g.className='ctrl-group';
+    const h = document.createElement('div'); h.className='ctrl-header';
+    
+    // Typing input container
+    const valWrap = document.createElement('div');
+    valWrap.style.display = 'flex'; valWrap.style.alignItems = 'center'; valWrap.style.gap = '4px';
+
+    const numInp = document.createElement('input');
+    numInp.type = 'number';
+    numInp.className = 'ctrl-val';
+    numInp.style.width = '65px';
+    numInp.style.textAlign = 'center';
+    numInp.style.border = '1px solid var(--primary)';
+    numInp.style.margin = '0';
+    numInp.style.padding = '2px';
+    numInp.min = min; numInp.max = max; numInp.step = step;
+    numInp.value = value.toFixed(prec);
+
+    const unitTxt = document.createElement('span');
+    unitTxt.innerText = unit;
+    unitTxt.style.fontSize = '0.8rem';
+    unitTxt.style.color = 'var(--text-muted)';
+    unitTxt.dir = 'ltr';
+
+    valWrap.appendChild(numInp);
+    valWrap.appendChild(unitTxt);
+    
+    h.innerHTML = `<span>${label}</span>`;
+    h.appendChild(valWrap);
+    
+    const inp = document.createElement('input');
+    inp.type='range'; inp.min=min; inp.max=max; inp.step=step; inp.value=value;
+    
+    // Sync slider to typing
+    inp.oninput = e => { 
+        const val = parseFloat(e.target.value);
+        onChange(val); 
+        numInp.value = val.toFixed(prec); 
+    };
+    // Sync typing to slider
+    numInp.oninput = e => {
+        let val = parseFloat(e.target.value);
+        if(isNaN(val)) return;
+        if(val < min) val = min;
+        if(val > max) val = max;
+        onChange(val);
+        inp.value = val;
+    };
+    
+    g.appendChild(h); g.appendChild(inp);
+    return g;
+}
+
+// Global update for the 15-second timer
+function updateTrendVal(key, newVal, dt) {
+    if (!circuitActive) return;
+    if (!trends[key]) {
+        trends[key] = { val: newVal, trend: 0, timer: 0 };
+        return;
+    }
+    const diff = newVal - trends[key].val;
+    if (Math.abs(diff) > 0.005) { 
+        trends[key].trend = diff > 0 ? 1 : -1;
+        trends[key].timer = 15.0; // 15 SECONDS DURATION
+        trends[key].val = newVal;
+    }
+    if (trends[key].timer > 0) {
+        trends[key].timer -= dt;
+    }
+}
+
+// Arrow Generator
+function getTrendHtml(key) {
+    if (!circuitActive || !trends[key] || trends[key].timer <= 0) return '';
+    const opacity = Math.min(1, trends[key].timer); 
+    if (trends[key].trend === 1) return ` <i class="fas fa-arrow-up trend-arrow" style="color: rgba(16, 185, 129, ${opacity});"></i>`;
+    if (trends[key].trend === -1) return ` <i class="fas fa-arrow-down trend-arrow" style="color: rgba(239, 68, 68, ${opacity});"></i>`;
+    return '';
+}
+
+// Dynamic Font Size and Color for System Totals
+function getDynStyle(key, defaultColor) {
+    if (!circuitActive || !trends[key] || trends[key].timer <= 0) {
+        return defaultColor ? `color: ${defaultColor}; transition: all 0.3s ease;` : `transition: all 0.3s ease;`;
+    }
+    const opacity = Math.min(1, trends[key].timer);
+    if (trends[key].trend === 1) {
+        // Big and Green
+        return `font-size: 1.3em; color: rgba(16, 185, 129, ${opacity}); transition: all 0.3s ease; display: inline-block; transform-origin: left center;`;
+    } else if (trends[key].trend === -1) {
+        // Small and Red
+        return `font-size: 0.85em; color: rgba(239, 68, 68, ${opacity}); transition: all 0.3s ease; display: inline-block; transform-origin: left center;`;
+    }
+    return defaultColor ? `color: ${defaultColor}; transition: all 0.3s ease;` : `transition: all 0.3s ease;`;
+}
+
+function updateDataGrid(c, dt) {
+    // 1. Process all trends first
+    if(circuitActive) {
+        updateTrendVal("Sys_R", c.Rext, dt);
+        updateTrendVal("Sys_V", c.Vterm, dt);
+        updateTrendVal("Sys_I", c.I, dt);
+        updateTrendVal("Sys_P", c.Ptot, dt);
+        if(cfg.rmain > 0) {
+            updateTrendVal("Rm_V", c.Vmain, dt);
+            updateTrendVal("Rm_I", c.I, dt);
+            updateTrendVal("Rm_P", c.Pmain, dt);
+        }
+        c.branchResults.forEach((bRes, bIdx) => {
+            bRes.lamps.forEach((lampRes, lIdx) => {
+                const k = `L_${bIdx}_${lIdx}`;
+                updateTrendVal(`${k}_V`, lampRes.V, dt);
+                updateTrendVal(`${k}_I`, lampRes.I, dt);
+                updateTrendVal(`${k}_P`, lampRes.P, dt);
+            });
+        });
+    }
+
+    // 2. Render HTML safely
+    const tbody = document.getElementById('data-grid-body');
+    let html = '';
+    
+    html += `<tr class="highlight-row">
+        <td><strong style="color: var(--primary);">${t('sys_tot')}</strong></td>
+        <td><span dir="ltr" style="${getDynStyle("Sys_R", "")}">${circuitActive ? c.Rext.toFixed(2) : '?'}</span>${getTrendHtml("Sys_R")}</td>
+        <td><span dir="ltr" style="${getDynStyle("Sys_V", "")}">${circuitActive ? c.Vterm.toFixed(2) : '?'}</span>${getTrendHtml("Sys_V")}</td>
+        <td><strong dir="ltr" style="${getDynStyle("Sys_I", "#ef4444")}">${circuitActive ? c.I.toFixed(3) : '?'}</strong>${getTrendHtml("Sys_I")}</td>
+        <td><strong dir="ltr" style="${getDynStyle("Sys_P", "#fbbf24")}">${circuitActive ? c.Ptot.toFixed(2) : '?'}</strong>${getTrendHtml("Sys_P")}</td>
+    </tr>`;
+
+    if(cfg.rmain > 0) {
+        html += `<tr style="background: rgba(16, 185, 129, 0.05);">
+            <td><strong style="color: #10b981;">${t('main_line')} R<sub>main</sub></strong></td>
+            <td><span dir="ltr">${cfg.rmain.toFixed(1)}</span></td>
+            <td><span dir="ltr">${circuitActive ? c.Vmain.toFixed(2) : '?'}</span>${getTrendHtml("Rm_V")}</td>
+            <td><span dir="ltr">${circuitActive ? c.I.toFixed(3) : '?'}</span>${getTrendHtml("Rm_I")}</td>
+            <td><span dir="ltr">${circuitActive ? c.Pmain.toFixed(2) : '?'}</span>${getTrendHtml("Rm_P")}</td>
+        </tr>`;
+    }
+
+    c.branchResults.forEach((bRes, bIdx) => {
+        bRes.lamps.forEach((lampRes, lIdx) => {
+            const lbl = cfg.mode === 'series' ? `R<sub>${lIdx+1}</sub>` : `R<sub>${bIdx+1}.${lIdx+1}</sub>`;
+            const k = `L_${bIdx}_${lIdx}`;
+            html += `<tr>
+                <td>${t('lamp')} <span dir="ltr">${lbl}</span></td>
+                <td><span dir="ltr">${lampRes.R.toFixed(1)}</span></td>
+                <td><span dir="ltr">${circuitActive ? lampRes.V.toFixed(2) : '?'}</span>${getTrendHtml(`${k}_V`)}</td>
+                <td><span dir="ltr">${circuitActive ? lampRes.I.toFixed(3) : '?'}</span>${getTrendHtml(`${k}_I`)}</td>
+                <td><span dir="ltr">${circuitActive ? lampRes.P.toFixed(2) : '?'}</span>${getTrendHtml(`${k}_P`)}</td>
+            </tr>`;
+        });
+    });
+    tbody.innerHTML = html;
+}
+
+/* =============================================
+   PARTICLES (BRANCH-SPECIFIC CURRENT VISUALIZATION)
+   ============================================= */
+let branchParts = [];
+
+function resetParticles() {
+    const N_PER_BRANCH = 16; 
+    branchParts = [];
+    for(let i=0; i<cfg.branches.length; i++) {
+        for(let j=0; j<N_PER_BRANCH; j++) {
+            branchParts.push({ t: j/N_PER_BRANCH, branch: i });
+        }
+    }
+}
+
+function posOnPoly(pts, t) {
+  t = ((t%1)+1)%1;
+  let segs=[]; let total=0;
+  for(let i=0;i<pts.length-1;i++){
+    const dx=pts[i+1].x-pts[i].x, dy=pts[i+1].y-pts[i].y;
+    const l=Math.sqrt(dx*dx+dy*dy); segs.push(l); total+=l;
+  }
+  if(total === 0) return pts[0];
+  let d = t*total;
+  for(let i=0;i<segs.length;i++){
+    if(d<=segs[i]){
+      const f=d/segs[i];
+      return { x:pts[i].x+f*(pts[i+1].x-pts[i].x), y:pts[i].y+f*(pts[i+1].y-pts[i].y) };
+    }
+    d-=segs[i];
+  }
+  return pts[pts.length-1];
+}
+
+/* =============================================
+   DRAW LOOP (VERTICAL PARALLEL DESIGN)
+   ============================================= */
+let animT=0;
+
+function draw(dt) {
+  const canvas = document.getElementById('canvas-ohm');
+  const par = canvas.parentElement;
+  const W = par.clientWidth, H = par.clientHeight;
+  canvas.width=W; canvas.height=H;
+  const ctx = canvas.getContext('2d');
+  
+  const c = calcCircuit();
+  if(circuitActive) { animT += dt; }
+  
+  updateDataGrid(c, dt); 
+
+  /* ---- LAYOUT ---- */
+  const cx=W*.5, cy=H*.5;
+  const lx=cx-W*.35, rx=cx+W*.35;   
+  const ty=cy-H*.35, by=cy+H*.35;   
+
+  ctx.fillStyle='#0f172a'; ctx.fillRect(0,0,W,H);
+
+  /* ---- WIRES & PATHS ---- */
+  ctx.lineWidth=3; ctx.strokeStyle='#1e3a5f'; ctx.lineJoin='round';
+  const branchPaths = [];
+
+  if(cfg.mode==='series') {
+    ctx.beginPath();
+    ctx.moveTo(lx,ty); ctx.lineTo(rx,ty);
+    ctx.lineTo(rx,by); ctx.lineTo(lx,by);
+    ctx.closePath(); ctx.stroke();
+    branchPaths[0] = [ {x:lx,y:ty}, {x:rx,y:ty}, {x:rx,y:by}, {x:lx,y:by}, {x:lx,y:ty} ];
+  } else {
+    const gapX = (rx - lx) / cfg.branches.length;
+    const lastBranchX = lx + gapX * cfg.branches.length;
+    
+    ctx.beginPath(); ctx.moveTo(lx, ty); ctx.lineTo(lastBranchX, ty); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(lx, by); ctx.lineTo(lastBranchX, by); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(lx, ty); ctx.lineTo(lx, by); ctx.stroke();
+    
+    ctx.lineWidth=2;
+    for(let i=0; i<cfg.branches.length; i++) {
+        const branchX = lx + gapX * (i+1);
+        ctx.beginPath(); ctx.moveTo(branchX, ty); ctx.lineTo(branchX, by); ctx.stroke();
+        
+        branchPaths.push([
+            {x:lx, y:cy-25}, {x:lx, y:ty}, {x:branchX, y:ty}, 
+            {x:branchX, y:by}, {x:lx, y:by}, {x:lx, y:cy+25}
+        ]);
+    }
+    ctx.lineWidth=3;
+  }
+
+  /* ---- BATTERY & MAIN METERS ---- */
+  drawBattery(ctx,lx,cy,H);
+  drawAmmeter(ctx, lx+W*.10, ty, circuitActive ? c.I : 0);
+  drawVoltmeter(ctx, lx-28, ty, by, circuitActive ? c.Vterm : 0);
+
+  /* ---- MAIN SERIES LAMP ---- */
+  if(cfg.rmain > 0) {
+      const mainLampY = ty + (cy - 20 - ty) / 2; 
+      const bMain = circuitActive ? Math.min(1, c.I / 1.2) : 0;
+      drawLamp(ctx, lx, mainLampY, 'R_m', cfg.rmain, bMain, true); 
+  }
+
+  /* ---- DYNAMIC LAMPS ---- */
+  if(cfg.mode==='series') {
+    const branch = cfg.branches[0];
+    const spacing = (rx - lx) / (branch.length + 1);
+    branch.forEach((R, lIdx) => {
+        const lampX = lx + spacing * (lIdx + 1);
+        const b = circuitActive ? Math.min(1, c.branchResults[0].I / 1.2) : 0;
+        drawLamp(ctx, lampX, ty, `R${lIdx+1}`, R, b, false);
+    });
+  } else {
+    const gapX = (rx - lx) / cfg.branches.length;
+    cfg.branches.forEach((branch, bIdx) => {
+        const branchX = lx + gapX * (bIdx + 1);
+        const vSpacing = (by - ty) / (branch.length + 1);
+        
+        branch.forEach((R, lIdx) => {
+            const lampY = ty + vSpacing * (lIdx + 1);
+            const b = circuitActive ? Math.min(1, (c.branchResults[bIdx].lamps[lIdx].V/R) / 1.5) : 0;
+            drawLamp(ctx, branchX, lampY, `R${bIdx+1}.${lIdx+1}`, R, b, true);
+        });
+        drawAmmeterSmall(ctx, branchX, ty + 25, circuitActive ? c.branchResults[bIdx].I : 0);
+    });
+  }
+
+  /* ---- PARTICLES ---- */
+  branchParts.forEach((p,i) => {
+      const bIdx = cfg.mode === 'series' ? 0 : p.branch;
+      if(branchPaths[bIdx]) {
+          const branchI = c.branchResults[bIdx].I;
+          const pSpeed = circuitActive ? Math.min(branchI * 0.05, 0.3) : 0;
+          p.t = (p.t + pSpeed*dt + 1)%1;
+          const pos = posOnPoly(branchPaths[bIdx], p.t);
+          drawParticle(ctx, pos.x, pos.y, animT+i);
+      }
+  });
+
+  /* ---- MINI P-I GRAPH ---- */
+  drawPIGraph(ctx, W, H, c, circuitActive);
+}
+
+/* ============ DRAWING HELPERS ============ */
+function drawParticle(ctx,x,y,phase) {
+  const a=0.5+0.5*Math.sin(phase*3);
+  ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2);
+  ctx.fillStyle=`rgba(251,191,36,${0.55+0.45*a})`;
+  ctx.shadowColor='#fbbf24'; ctx.shadowBlur=8;
+  ctx.fill(); ctx.shadowBlur=0;
+}
+
+function drawBattery(ctx,x,cy,H) {
+  const hw=14, gap=10;
+  ctx.strokeStyle='#334155'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(x-hw,cy-gap); ctx.lineTo(x+hw,cy-gap); ctx.stroke();
+  ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(x-hw*.55,cy+gap); ctx.lineTo(x+hw*.55,cy+gap); ctx.stroke();
+  ctx.fillStyle='#4cc9f0'; ctx.font='bold 11px Courier New'; ctx.fillText('+',x-4,cy-gap-4);
+  ctx.fillStyle='#ef4444'; ctx.fillText('−',x-3,cy+gap+14);
+}
+
+function drawLamp(ctx,x,y,name,R,bright, isVertical) {
+  const r=13;
+  ctx.shadowColor='#fde047'; ctx.shadowBlur=bright*36;
+  ctx.fillStyle=`rgba(253,224,71,${.12+bright*.88})`;
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+  
+  ctx.strokeStyle='#4361ee'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.stroke();
+  
+  ctx.strokeStyle=`rgba(253,224,71,${.35+bright*.65})`; ctx.lineWidth=1.5;
+  if(isVertical) {
+      ctx.beginPath(); ctx.moveTo(x-6,y-6); ctx.lineTo(x+6,y+6); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x+6,y-6); ctx.lineTo(x-6,y+6); ctx.stroke();
+  } else {
+      ctx.beginPath(); ctx.moveTo(x-5,y-5); ctx.lineTo(x+5,y+5); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x+5,y-5); ctx.lineTo(x-5,y+5); ctx.stroke();
+  }
+  
+  ctx.fillStyle='#94a3b8'; ctx.font='10px Courier New'; ctx.textAlign='center';
+  ctx.fillText(name, isVertical ? x-r-16 : x, isVertical ? y+3 : y-r-6);
+  ctx.textAlign='left';
+}
+
+function drawAmmeter(ctx,x,y,I) {
+  const r=12;
+  ctx.fillStyle='#0f2a3a'; ctx.strokeStyle='#ef4444'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#ef4444'; ctx.font='bold 10px Courier New'; ctx.textAlign='center';
+  ctx.fillText('A',x,y+3);
+  ctx.textAlign='left';
+}
+
+function drawAmmeterSmall(ctx,x,y,I) {
+  const r=9;
+  ctx.fillStyle='#0f2a3a'; ctx.strokeStyle='#ef4444'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#ef4444'; ctx.font='bold 8px Courier New'; ctx.textAlign='center';
+  ctx.fillText('A',x,y+3);
+  ctx.textAlign='left';
+}
+
+function drawVoltmeter(ctx,x,ty,by,V) {
+  const cy2=(ty+by)/2, r=12;
+  ctx.strokeStyle='#4cc9f0'; ctx.lineWidth=1.5; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(x+3,ty); ctx.lineTo(x,ty+10); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x+3,by); ctx.lineTo(x,by-10); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#1a0a1a'; ctx.strokeStyle='#4cc9f0'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(x,cy2,r,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#4cc9f0'; ctx.font='bold 10px Courier New'; ctx.textAlign='center';
+  ctx.fillText('V',x,cy2+3);
+  ctx.textAlign='left';
+}
+
+function drawPIGraph(ctx,W,H,c, isActive) {
+  const gx=W-105, gy=H-75, gw=85, gh=55;
+  ctx.fillStyle='rgba(15,23,42,.9)';
+  ctx.fillRect(gx-4,gy-4,gw+8,gh+20);
+  ctx.strokeStyle='#334155'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(gx,gy); ctx.lineTo(gx,gy+gh); ctx.lineTo(gx+gw,gy+gh); ctx.stroke();
+  ctx.strokeStyle='#fbbf24'; ctx.lineWidth=2;
+  ctx.beginPath();
+  const Reff=c.Rext||1;
+  for(let px=0;px<=gw;px++){
+    const ii=(px/gw)*2.5;
+    const pp=ii*ii*Reff;
+    const py=gh-Math.min(pp/(3*Reff)*gh,gh);
+    px===0 ? ctx.moveTo(gx+px,gy+py) : ctx.lineTo(gx+px,gy+py);
+  }
+  ctx.stroke();
+  
+  if(isActive) {
+      const opX=gx+Math.min(c.I/2.5,1)*gw;
+      const opY=gy+gh-Math.min(c.I*c.I*Reff/(3*Reff)*gh,gh);
+      ctx.beginPath(); ctx.arc(opX,opY,4,0,Math.PI*2);
+      ctx.fillStyle='#ef4444'; ctx.fill();
+  }
+  ctx.fillStyle='#fbbf24'; ctx.font='9px Courier New';
+  ctx.fillText('P=I²R',gx+2,gy+10);
+  ctx.fillStyle='#64748b';
+  ctx.fillText('I→',gx+gw-12,gy+gh+12);
+}
+
+/* =============================================
+   INIT & LOOP
+   ============================================= */
+let last=0;
+function loop(now){
+  const dt=Math.min((now-last)/1000,.05); last=now;
+  draw(dt);
+  requestAnimationFrame(loop);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  setMode('series'); 
+  renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});
+  anime({targets:'.sim-info,.canvas-column',opacity:[0,1],translateY:[20,0],delay:anime.stagger(120),easing:'easeOutQuad',duration:800});
+  requestAnimationFrame(loop);
+});
+</script>
+</body>
+</html>
