@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AC Dynamo — Complete System Edition</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <script src="https://cdn.babylonjs.com/havok/HavokPhysics_umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3/lib/anime.min.js"></script>
+
+  <style>
+    :root {
+      --primary:#4361ee; --primary-soft:rgba(67,97,238,.1);
+      --nu-gradient:linear-gradient(135deg,#4361ee,#4cc9f0);
+      --bg:#020617; 
+      --text:#f8fafc; --text-muted:#94a3b8;
+      --border:#1e293b; --glass:rgba(15, 23, 42, 0.8);
+      --panel-bg: #0f172a;
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
+    
+    .nouveau-header{position:sticky;top:0;z-index:1000;background:var(--glass);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:.75rem 0;}
+    .header-bar{max-width:1200px;margin:0 auto;padding:0 1.5rem;display:flex;justify-content:space-between;align-items:center;}
+    .logo-area{display:flex;align-items:center;gap:1rem;text-decoration:none;color:inherit;}
+    .logo-box{width:42px;height:42px;background:var(--nu-gradient);border-radius:12px;color:#fff;display:grid;place-items:center;font-size:1.2rem;flex-shrink:0; box-shadow: 0 0 15px rgba(76, 201, 240, 0.4);}
+    .brand-name{font-family:'Outfit',sans-serif;font-weight:800;font-size:1.5rem;letter-spacing:-.02em;}
+    
+    .sim-container{max-width:1400px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+    .sim-row{display:flex;flex-direction:column;gap:2rem;}
+    @media(min-width:1024px){.sim-row{flex-direction:row;align-items:flex-start;gap:2rem;}}
+    
+    .sim-info{flex:1; min-width: 350px;}
+    .sim-info h2{font-family:'Outfit',sans-serif;margin:.5rem 0 1rem;font-size:2.2rem;font-weight:800; background: var(--nu-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
+    .sim-tag{display:inline-block;background:rgba(76, 201, 240, 0.1);color:#4cc9f0;padding:.4rem 1rem;border-radius:20px;font-weight:600;font-size:.85rem;margin-bottom:.5rem; border: 1px solid rgba(76, 201, 240, 0.3);}
+    
+    .canvas-column {flex:2; display:flex; flex-direction:column; gap:1.5rem; width: 100%;}
+    .canvas-box{background:#000;border-radius:24px;aspect-ratio:16/9;position:relative;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,.5); border: 1px solid var(--border); width: 100%; outline: none;}
+    #renderCanvas { width: 100%; height: 100%; touch-action: none; outline: none;}
+    
+    .hud { position: absolute; top: 1.5rem; left: 1.5rem; color: #4cc9f0; font-family: 'Courier New', monospace; font-weight: bold; pointer-events: none; z-index: 10; text-shadow: 0 2px 10px rgba(0,0,0,0.8);}
+    .hud-val { color: #fff; font-size: 1.8rem; text-shadow: 0 0 15px rgba(253, 224, 71, 0.5);}
+    .hud-label { font-size: 0.85rem; color: #94a3b8; margin-bottom: 4px; letter-spacing: 0.1em;}
+
+    .legend { position: absolute; bottom: 1.5rem; left: 1.5rem; background: rgba(15, 23, 42, 0.85); padding: 12px 18px; border-radius: 12px; border: 1px solid var(--border); font-size: 0.9rem; pointer-events: none; backdrop-filter: blur(8px);}
+    .legend-item { display: flex; align-items: center; gap: 10px; margin-bottom: 6px;}
+    .legend-item:last-child { margin-bottom: 0; }
+    .color-box { width: 14px; height: 14px; border-radius: 4px; box-shadow: 0 0 5px rgba(255,255,255,0.2); }
+
+    .controls{margin-top:1rem;background:var(--panel-bg);padding:1.5rem;border:1px solid var(--border);border-radius:16px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);}
+    .ctrl-group{margin-bottom:1.2rem;}
+    .ctrl-header{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:.9rem;margin-bottom:.6rem; color: #cbd5e1;}
+    
+    .ctrl-val{font-family:'Courier New',monospace;color:#4cc9f0;font-weight:700;background:rgba(0,0,0,0.3);border-radius:6px; outline: none; border: 1px solid #1e293b; text-align: center; padding: 4px; width: 65px; color: #fff;}
+    input[type=range]{width:100%;accent-color:#4cc9f0;cursor:pointer;height:6px;border-radius:3px; background: #1e293b;}
+
+    .data-panel {background:var(--panel-bg); border:1px solid var(--border); border-radius:16px; padding:1.5rem; overflow-x: auto; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);}
+    .data-panel h3 {margin-top: 0; font-family: 'Outfit', sans-serif; font-size: 1.2rem; color: #fff; border-bottom: 2px solid var(--border); padding-bottom: 0.75rem;}
+    
+    .data-grid {width: 100%; border-collapse: collapse; margin-bottom: 1rem;}
+    .data-grid th {text-align: left; padding: 0.75rem 0.5rem; font-size: 0.8rem; color: #64748b; text-transform: uppercase; border-bottom: 1px solid var(--border); letter-spacing: 0.05em;}
+    .data-grid td {padding: 0.75rem 0.5rem; font-family: 'Courier New', monospace; font-weight: 600; font-size: 0.95rem; border-bottom: 1px solid var(--border); color: #cbd5e1;}
+    .data-grid tr:hover { background: rgba(255,255,255,0.02); }
+
+    footer{text-align:center;padding:3rem;border-top:1px solid var(--border);margin-top:4rem;background:var(--bg);}
+  </style>
+</head>
+<body>
+
+<header class="nouveau-header">
+  <div class="header-bar">
+    <a href="#" class="logo-area">
+      <div class="logo-box"><i class="fas fa-bolt"></i></div>
+      <span class="brand-name">The Nouveau Way</span>
+    </a>
+  </div>
+</header>
+
+<main>
+  <div class="sim-container">
+    <section class="sim-row">
+      
+      <div class="sim-info">
+        <span class="sim-tag">Electromagnetism Engine</span>
+        <h2>AC Dynamo Generator</h2>
+        <p style="color: #94a3b8; font-size: 1.05rem;">Observe Faraday's Law. Mechanical rotation induces an alternating electromotive force (EMF) to power the external lamp circuit.</p>
+
+        <div class="controls laws-panel" style="background: rgba(67, 97, 238, 0.05); border-color: rgba(67, 97, 238, 0.2); margin-bottom: 15px;">
+            <div class="ctrl-header" style="color: #4cc9f0; font-size: 1rem; border-bottom: 1px solid rgba(67, 97, 238, 0.2); padding-bottom: 8px; margin-bottom: 8px;"><i class="fas fa-book"></i> <strong>Governing Equations</strong></div>
+            <p style="color: #cbd5e1; margin: 5px 0;"><strong>Magnetic Flux:</strong> $$\Phi = B \cdot A \cdot \cos(\omega t)$$</p>
+            <p style="color: #cbd5e1; margin: 5px 0;"><strong>Induced EMF:</strong> $$\varepsilon = -N \frac{d\Phi}{dt} = N A B \omega \sin(\omega t)$$</p>
+        </div>
+
+        <div class="controls">
+            <div class="ctrl-header" style="color: #fff; font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 16px;"><i class="fas fa-sliders-h"></i> <strong>Simulation Parameters</strong></div>
+            
+            <div class="ctrl-group">
+                <div class="ctrl-header">
+                    <span>Angular Velocity ($\omega$)</span>
+                    <div><input type="number" id="speed-num" class="ctrl-val" value="3.0" step="0.1" min="0" max="15"></div>
+                </div>
+                <input type="range" id="speed-slider" min="0" max="15" step="0.1" value="3.0">
+            </div>
+
+            <div class="ctrl-group">
+                <div class="ctrl-header">
+                    <span>B-Field Strength ($B$)</span>
+                    <div><input type="number" id="bfield-num" class="ctrl-val" value="2.0" step="0.1" min="0.1" max="5"></div>
+                </div>
+                <input type="range" id="bfield-slider" min="0.1" max="5" step="0.1" value="2.0">
+            </div>
+
+            <div class="ctrl-group">
+                <div class="ctrl-header">
+                    <span>Number of Turns ($N$)</span>
+                    <div><input type="number" id="turns-num" class="ctrl-val" value="150" step="10" min="10" max="500"></div>
+                </div>
+                <input type="range" id="turns-slider" min="10" max="500" step="10" value="150">
+            </div>
+
+            <div class="ctrl-group">
+                <div class="ctrl-header">
+                    <span>Coil Area ($A$) [m²]</span>
+                    <div><input type="number" id="area-num" class="ctrl-val" value="0.05" step="0.01" min="0.01" max="0.15"></div>
+                </div>
+                <input type="range" id="area-slider" min="0.01" max="0.15" step="0.01" value="0.05">
+            </div>
+        </div>
+      </div>
+
+      <div class="canvas-column">
+        
+        <div class="canvas-box">
+          <div class="hud">
+              <div class="hud-label">INSTANTANEOUS EMF ($\varepsilon$)</div>
+              <div id="hud-emf" class="hud-val" style="color: #fde047;">0.00 V</div>
+          </div>
+          <div class="legend">
+              <div class="legend-item"><div class="color-box" style="background: #4cc9f0;"></div> <span><strong>B-Field</strong> ($B$)</span></div>
+              <div class="legend-item"><div class="color-box" style="background: #ef4444;"></div> <span><strong>Velocity</strong> ($v$)</span></div>
+              <div class="legend-item"><div class="color-box" style="background: #10b981;"></div> <span><strong>Magnetic Force</strong> ($F$)</span></div>
+              <div class="legend-item"><div class="color-box" style="background: #fde047; box-shadow: 0 0 8px #fde047;"></div> <span><strong>Current Flow</strong> ($I$)</span></div>
+          </div>
+          <canvas id="renderCanvas"></canvas>
+        </div>
+
+        <div class="data-panel">
+            <h3><i class="fas fa-microchip"></i> Full System Telemetry</h3>
+            
+            <table class="data-grid">
+                <thead>
+                    <tr>
+                        <th>Time ($t$)</th>
+                        <th>Frequency ($f$)</th>
+                        <th>Coil Area ($A$)</th>
+                        <th>Rotation ($\theta$)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span id="dt-time">0.00</span> s</td>
+                        <td><span id="dt-freq">0.00</span> Hz</td>
+                        <td><span id="dt-area">0.00</span> m²</td>
+                        <td><span id="dt-theta">0</span>°</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="data-grid" style="margin-bottom: 0;">
+                <thead>
+                    <tr>
+                        <th>Inst. Flux ($\Phi$)</th>
+                        <th>Rate ($d\Phi/dt$)</th>
+                        <th>Max EMF ($\varepsilon_{max}$)</th>
+                        <th>Current Dir</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span id="dt-flux">0.00</span> Wb</td>
+                        <td><span id="dt-dflux">0.00</span> Wb/s</td>
+                        <td><span id="dt-emax" style="color: #4cc9f0;">0.00</span> V</td>
+                        <td><strong id="dt-dir" style="color: #64748b;">NONE</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+function sync(sliderId, numId) {
+    const s = document.getElementById(sliderId);
+    const n = document.getElementById(numId);
+    if(s && n) {
+        s.oninput = e => n.value = e.target.value;
+        n.oninput = e => s.value = e.target.value;
+    }
+}
+sync('speed-slider', 'speed-num');
+sync('bfield-slider', 'bfield-num');
+sync('turns-slider', 'turns-num');
+sync('area-slider', 'area-num');
+
+/* === UNIVERSAL CINEMATIC BABYLON ENGINE === */
+const canvas = document.getElementById("renderCanvas");
+const engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+
+const createScene = async function () {
+    const scene = new BABYLON.Scene(engine);
+    scene.clearColor = new BABYLON.Color4(0.01, 0.02, 0.04, 1.0); 
+
+    // 1. Camera & Lighting
+    const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2.2, Math.PI / 3, 30, BABYLON.Vector3.Zero(), scene);
+    camera.attachControl(canvas, true);
+    camera.wheelPrecision = 50;
+    camera.target = new BABYLON.Vector3(0, 0, 3); // Shift focus slightly towards the external circuit
+
+    const dirLight = new BABYLON.DirectionalLight("dirLight", new BABYLON.Vector3(0.5, -1, 0.5), scene);
+    dirLight.position = new BABYLON.Vector3(-10, 20, -10);
+    dirLight.intensity = 2.0;
+    
+    const envHelper = scene.createDefaultEnvironment({
+        createSkybox: false, createGround: true, groundSize: 100,
+        groundColor: new BABYLON.Color3(0.02, 0.03, 0.05), enableGroundShadow: true,
+    });
+    envHelper.ground.position.y = -8;
+    
+    // 2. CRISP Post-Processing
+    const pipeline = new BABYLON.DefaultRenderingPipeline("defaultPipeline", true, scene, [camera]);
+    pipeline.samples = 4; pipeline.bloomEnabled = true; pipeline.bloomThreshold = 0.8; pipeline.bloomWeight = 0.2; 
+    const gl = new BABYLON.GlowLayer("glow", scene); gl.intensity = 0.3; 
+
+    /* === MESH GENERATION HELPERS === */
+    const createLabelPlane = (text, colorHex, size, fontSize, scene) => {
+        const dt = new BABYLON.DynamicTexture("dt", {width: 256, height: 256}, scene);
+        dt.hasAlpha = true;
+        dt.drawText(text, null, null, `bold ${fontSize}px Outfit`, colorHex, "transparent", true);
+        const plane = BABYLON.MeshBuilder.CreatePlane("plane", {size: size}, scene);
+        const mat = new BABYLON.StandardMaterial("mat", scene);
+        mat.diffuseTexture = dt; mat.emissiveTexture = dt; mat.backFaceCulling = false;
+        plane.material = mat;
+        return { plane, dt }; // Return dt so we can update it if needed
+    };
+
+    const createVectorArrow = (name, colorHex, length, thickness, scene) => {
+        const arrow = new BABYLON.TransformNode(name);
+        const mat = new BABYLON.StandardMaterial(name+"mat", scene);
+        mat.emissiveColor = BABYLON.Color3.FromHexString(colorHex);
+        mat.diffuseColor = BABYLON.Color3.FromHexString(colorHex);
+        
+        const shaft = BABYLON.MeshBuilder.CreateCylinder("shaft", {height: length, diameter: thickness}, scene);
+        shaft.position.y = length/2; shaft.material = mat; shaft.parent = arrow;
+        
+        const head = BABYLON.MeshBuilder.CreateCylinder("head", {height: thickness*4, diameterTop: 0, diameterBottom: thickness*2.5}, scene);
+        head.position.y = length + (thickness*2); head.material = mat; head.parent = arrow;
+        
+        return arrow;
+    };
+
+    /* === SCENE GEOMETRY === */
+
+    // A. Magnets with Labels
+    const magMatN = new BABYLON.PBRMaterial("pbrN", scene);
+    magMatN.albedoColor = BABYLON.Color3.FromHexString("#ef4444"); magMatN.metallic = 0.5; magMatN.roughness = 0.4;
+    const magMatS = new BABYLON.PBRMaterial("pbrS", scene);
+    magMatS.albedoColor = BABYLON.Color3.FromHexString("#4cc9f0"); magMatS.metallic = 0.5; magMatS.roughness = 0.4;
+
+    const magnetN = BABYLON.MeshBuilder.CreateBox("magN", {height: 10, width: 2, depth: 10}, scene);
+    magnetN.position.x = -11; magnetN.material = magMatN;
+    const labelN = createLabelPlane("N", "#ffffff", 5, 180, scene).plane; labelN.parent = magnetN; labelN.position.x = 1.01; labelN.rotation.y = Math.PI/2;
+
+    const magnetS = BABYLON.MeshBuilder.CreateBox("magS", {height: 10, width: 2, depth: 10}, scene);
+    magnetS.position.x = 11; magnetS.material = magMatS;
+    const labelS = createLabelPlane("S", "#ffffff", 5, 180, scene).plane; labelS.parent = magnetS; labelS.position.x = -1.01; labelS.rotation.y = -Math.PI/2;
+
+    // B. Field Lines
+    const fieldLinesMat = new BABYLON.StandardMaterial("flMat", scene);
+    fieldLinesMat.emissiveColor = new BABYLON.Color3(0.05, 0.2, 0.3); fieldLinesMat.alpha = 0.3;
+    for(let z=-4; z<=4; z+=2) {
+        for(let y=-4; y<=4; y+=2) {
+            const line = BABYLON.MeshBuilder.CreateTube("tube", {path: [new BABYLON.Vector3(-10, y, z), new BABYLON.Vector3(10, y, z)], radius: 0.03}, scene);
+            line.material = fieldLinesMat;
+        }
+    }
+
+    // C. The Coil
+    const coilParent = new BABYLON.TransformNode("coilRoot");
+    const coilMat = new BABYLON.PBRMaterial("coilMat", scene);
+    coilMat.albedoColor = BABYLON.Color3.FromHexString("#b87333"); coilMat.metallic = 1.0; coilMat.roughness = 0.2;
+    
+    const wBase = 7, dBase = 5, rWire = 0.1; 
+    let activeWireMesh = null; 
+
+    for(let i=0; i<4; i++) {
+        const offset = (i - 1.5) * 0.2;
+        const c1 = BABYLON.MeshBuilder.CreateCylinder("c", {height: wBase, diameter: rWire}, scene); 
+        c1.rotation.x = Math.PI/2; c1.position.y = dBase/2 + offset; c1.position.z = offset; c1.parent = coilParent; c1.material = coilMat;
+        if(i===0) activeWireMesh = c1; 
+        
+        const c2 = BABYLON.MeshBuilder.CreateCylinder("c", {height: wBase, diameter: rWire}, scene); 
+        c2.rotation.x = Math.PI/2; c2.position.y = -dBase/2 + offset; c2.position.z = offset; c2.parent = coilParent; c2.material = coilMat;
+        
+        const c3 = BABYLON.MeshBuilder.CreateCylinder("c", {height: dBase, diameter: rWire}, scene); 
+        c3.position.z = wBase/2 + offset; c3.position.y = offset; c3.parent = coilParent; c3.material = coilMat;
+        
+        const c4 = BABYLON.MeshBuilder.CreateCylinder("c", {height: dBase, diameter: rWire}, scene); 
+        c4.position.z = -wBase/2 + offset; c4.position.y = offset; c4.parent = coilParent; c4.material = coilMat;
+    }
+    const baseArea = 0.05;
+
+    // D. EXTERNAL CIRCUIT (Wires, Lamp, Voltmeter)
+    const extCircuitNode = new BABYLON.TransformNode("extCircuit");
+    const wireMat = new BABYLON.PBRMaterial("wireMat", scene);
+    wireMat.albedoColor = new BABYLON.Color3(0.2, 0.2, 0.2); wireMat.metallic = 0.8; wireMat.roughness = 0.4;
+
+    // Static Brushes/Slip Rings (Abstracted as connection points)
+    const brushA = new BABYLON.Vector3(0, dBase/2 + 0.5, 4); // Top connection
+    const brushB = new BABYLON.Vector3(0, -dBase/2 - 0.5, 4); // Bottom connection
+    
+    // Draw rigid wires to a lamp stand
+    const lampPos = new BABYLON.Vector3(0, -4, 10);
+    const pathA = [brushA, new BABYLON.Vector3(brushA.x, brushA.y, lampPos.z), new BABYLON.Vector3(lampPos.x - 1, lampPos.y, lampPos.z)];
+    const pathB = [brushB, new BABYLON.Vector3(brushB.x, brushB.y, lampPos.z), new BABYLON.Vector3(lampPos.x + 1, lampPos.y, lampPos.z)];
+    
+    const wireA = BABYLON.MeshBuilder.CreateTube("wA", {path: pathA, radius: 0.08}, scene); wireA.material = wireMat;
+    const wireB = BABYLON.MeshBuilder.CreateTube("wB", {path: pathB, radius: 0.08}, scene); wireB.material = wireMat;
+
+    // The Lamp Load
+    const bulb = BABYLON.MeshBuilder.CreateSphere("bulb", {diameter: 2.5}, scene);
+    bulb.position = lampPos;
+    const bulbMat = new BABYLON.PBRMaterial("bulbMat", scene);
+    bulbMat.albedoColor = new BABYLON.Color3(1, 1, 1); bulbMat.metallic = 0.1; bulbMat.roughness = 0.1; bulbMat.alpha = 0.3;
+    bulb.material = bulbMat;
+
+    const filament = BABYLON.MeshBuilder.CreateCylinder("filament", {height: 0.8, diameter: 0.2}, scene);
+    filament.position = lampPos;
+    filament.rotation.z = Math.PI/2;
+    const filMat = new BABYLON.PBRMaterial("filMat", scene);
+    filMat.albedoColor = new BABYLON.Color3(0,0,0);
+    filament.material = filMat;
+
+    const base = BABYLON.MeshBuilder.CreateCylinder("base", {height: 1, diameter: 1.2}, scene);
+    base.position = new BABYLON.Vector3(lampPos.x, lampPos.y - 1.5, lampPos.z);
+    base.material = wireMat;
+
+    // 3D Voltmeter Box
+    const vmBox = BABYLON.MeshBuilder.CreateBox("vm", {width: 4, height: 2, depth: 1}, scene);
+    vmBox.position = new BABYLON.Vector3(0, 0, 10);
+    const vmMat = new BABYLON.PBRMaterial("vmMat", scene);
+    vmMat.albedoColor = new BABYLON.Color3(0.1, 0.1, 0.1); vmMat.metallic = 0.8;
+    vmBox.material = vmMat;
+    
+    // Wire taps to voltmeter
+    const tapA = BABYLON.MeshBuilder.CreateTube("tA", {path: [new BABYLON.Vector3(-1, 0, 10), new BABYLON.Vector3(-1.5, vmBox.position.y - 1, 10)], radius: 0.05}, scene); tapA.material = wireMat;
+    const tapB = BABYLON.MeshBuilder.CreateTube("tB", {path: [new BABYLON.Vector3(1, 0, 10), new BABYLON.Vector3(1.5, vmBox.position.y - 1, 10)], radius: 0.05}, scene); tapB.material = wireMat;
+
+    const vmScreen = createLabelPlane("0.00 V", "#4cc9f0", 3.8, 80, scene);
+    vmScreen.plane.parent = vmBox;
+    vmScreen.plane.position = new BABYLON.Vector3(0, 0, -0.51); // Front face
+
+    // E. CURRENT FLOW (Animated Particles)
+    // Combine path for a full loop: brushA -> Lamp -> brushB
+    const circuitPath = [brushA, pathA[1], pathA[2], pathB[2], pathB[1], brushB];
+    const totalPathLen = 20; // Approximate
+    const packetCount = 15;
+    const packets = [];
+    
+    const packetMat = new BABYLON.StandardMaterial("packMat", scene);
+    packetMat.emissiveColor = BABYLON.Color3.FromHexString("#fde047");
+    
+    for(let i=0; i<packetCount; i++) {
+        const p = BABYLON.MeshBuilder.CreateSphere("p", {diameter: 0.3}, scene);
+        p.material = packetMat;
+        packets.push({ mesh: p, progress: i / packetCount }); // Progress 0.0 to 1.0
+    }
+
+    // F. Vector Arrows
+    const arrowB = createVectorArrow("arrowB", "#4cc9f0", 4, 0.15, scene);
+    arrowB.position = new BABYLON.Vector3(-4, 6, 0);
+    arrowB.rotation.z = -Math.PI/2; 
+
+    const arrowV = createVectorArrow("arrowV", "#ef4444", 3, 0.15, scene);
+    const arrowF = createVectorArrow("arrowF", "#10b981", 3, 0.15, scene);
+
+    // DOM References
+    const speedInp = document.getElementById('speed-num');
+    const bInp = document.getElementById('bfield-num');
+    const turnsInp = document.getElementById('turns-num');
+    const areaInp = document.getElementById('area-num');
+    
+    const dtTime = document.getElementById('dt-time');
+    const dtFreq = document.getElementById('dt-freq');
+    const dtArea = document.getElementById('dt-area');
+    const dtTheta = document.getElementById('dt-theta');
+    const dtFlux = document.getElementById('dt-flux');
+    const dtDflux = document.getElementById('dt-dflux');
+    const dtEmax = document.getElementById('dt-emax');
+    const hudEMF = document.getElementById('hud-emf');
+    const dtDir = document.getElementById('dt-dir');
+
+    let totalTime = 0;
+    
+    // Helper to interpolate position along the wire path
+    function getPositionOnPath(path, t) {
+        // Ensure t wraps strictly between 0 and 1 correctly for negative/positive values
+        t = ((t % 1) + 1) % 1; 
+        const segments = path.length - 1;
+        const scaledT = t * segments;
+        const index = Math.floor(scaledT);
+        const fraction = scaledT - index;
+        
+        const p1 = path[index];
+        const p2 = path[Math.min(index + 1, segments)];
+        return BABYLON.Vector3.Lerp(p1, p2, fraction);
+    }
+
+    // --- RENDER & LOGIC LOOP ---
+    scene.onBeforeRenderObservable.add(() => {
+        const dt = engine.getDeltaTime() / 1000;
+        const omega = parseFloat(speedInp.value) || 0;
+        const B = parseFloat(bInp.value) || 0;
+        const N = parseFloat(turnsInp.value) || 0;
+        const Area = parseFloat(areaInp.value) || 0.05;
+
+        const scaleFactor = Math.sqrt(Area / baseArea);
+        coilParent.scaling = new BABYLON.Vector3(scaleFactor, scaleFactor, scaleFactor);
+
+        totalTime += dt;
+        coilParent.rotation.z += omega * dt;
+        
+        let theta = coilParent.rotation.z % (2 * Math.PI);
+        if (theta < 0) theta += 2 * Math.PI;
+
+        // PHYSICS MATH
+        const freq = omega / (2 * Math.PI);
+        const flux = B * Area * Math.cos(theta);
+        const dflux_dt = -B * Area * omega * Math.sin(theta);
+        const emf = -N * dflux_dt; 
+        const emax = N * Area * B * omega;
+
+        // Glow Updates
+        const glowIntensity = Math.abs(emf) / (emax || 1);
+        coilMat.emissiveColor = BABYLON.Color3.FromHexString("#fde047").scale(glowIntensity * 0.8); 
+        
+        // LAMP FILAMENT GLOW
+        filMat.emissiveColor = BABYLON.Color3.FromHexString("#fde047").scale(glowIntensity * 2.0);
+        
+        // VOLTMETER SCREEN UPDATE
+        const emfStr = emf.toFixed(2) + " V";
+        vmScreen.dt.drawText(emfStr, null, null, "bold 80px Courier New", "#4cc9f0", "#0f172a", true);
+
+        // CURRENT PACKETS ANIMATION
+        // Speed of packets is proportional to instantaneous EMF. 
+        // Sign of EMF determines direction.
+        const currentVelocity = emf * 0.05; 
+        packets.forEach(packet => {
+            packet.progress += currentVelocity * dt;
+            packet.mesh.position = getPositionOnPath(circuitPath, packet.progress);
+            // Hide packets if EMF is basically zero
+            packet.mesh.isVisible = Math.abs(emf) > 0.1;
+            // Brightness scales with EMF
+            packet.mesh.scaling = new BABYLON.Vector3(0.5 + glowIntensity, 0.5 + glowIntensity, 0.5 + glowIntensity);
+        });
+
+        // === WORLD SPACE VECTORS ===
+        arrowB.scaling.y = Math.max(0.2, B / 2); 
+        
+        const wirePos = activeWireMesh.getAbsolutePosition();
+        arrowV.position = wirePos;
+        arrowF.position = wirePos;
+
+        arrowV.rotation.x = 0;
+        arrowV.rotation.y = 0;
+        arrowV.rotation.z = coilParent.rotation.z + Math.PI/2; 
+        arrowV.scaling.y = Math.max(0.1, omega / 3);
+
+        arrowF.rotation.x = 0;
+        arrowF.rotation.y = 0;
+        arrowF.rotation.z = (emf > 0) ? Math.PI : 0; 
+        arrowF.scaling.y = Math.max(0.1, glowIntensity * B * 1.5); 
+        arrowF.setEnabled(Math.abs(emf) > 0.05); 
+
+        // Update UI
+        hudEMF.innerText = emfStr;
+        dtTime.innerText = totalTime.toFixed(2);
+        dtFreq.innerText = freq.toFixed(2);
+        dtArea.innerText = Area.toFixed(3);
+        dtTheta.innerText = (theta * (180/Math.PI)).toFixed(0);
+        dtFlux.innerText = flux.toFixed(4);
+        dtDflux.innerText = dflux_dt.toFixed(4);
+        dtEmax.innerText = emax.toFixed(2);
+
+        if (emf > 0.1) {
+            dtDir.innerText = "POSITIVE (Forward)"; dtDir.style.color = "#10b981";
+        } else if (emf < -0.1) {
+            dtDir.innerText = "NEGATIVE (Reverse)"; dtDir.style.color = "#ef4444";
+        } else {
+            dtDir.innerText = "ZERO"; dtDir.style.color = "#64748b";
+        }
+    });
+
+    return scene;
+};
+
+createScene().then(scene => { engine.runRenderLoop(() => { scene.render(); }); });
+window.addEventListener("resize", () => { engine.resize(); });
+
+document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});
+    anime({targets:'.sim-info,.canvas-column',opacity:[0,1],translateY:[20,0],delay:anime.stagger(120),easing:'easeOutQuad',duration:800});
+});
+</script>
+</body>
+</html>
